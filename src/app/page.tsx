@@ -3,6 +3,7 @@
 import { ChangeEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Header from "@/common/components/Header";
 
 const tabs = ["Scheme", "Access", "Attention", "Training", "Help", "inclusion"];
 
@@ -18,19 +19,7 @@ const Home = () => {
 
   return (
     <main className="flex min-h-screen flex-col items-center mt-6">
-      <header>
-        <h1 className="text-[#DC493A] text-8xl not-italic font-bold leading-[normal] text-center">
-          SAATHI
-        </h1>
-        <ol className=" flex justify-evenly">
-          {tabs.map((tabsName, index) => (
-            <li key={tabsName} className="flex justify-around w-full">
-              <Link href="/"> {tabsName}</Link>
-              {tabs.length - 1 > index && <span className="mx-8">|</span>}
-            </li>
-          ))}
-        </ol>
-      </header>
+      <Header />
       <>
         <section className="mt-8">
           <h3 className="text-black text-4xl not-italic font-normal leading-[normal]">
@@ -99,7 +88,10 @@ const Home = () => {
           </form>
         </section>
         <section className="mt-8 ">
-          <button className="shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] rounded-[60px] bg-[#ff725e] text-white text-[64px] not-italic font-bold leading-[normal] px-16 py-4 flex justify-between items-center">
+          <Link
+            href="/terms"
+            className="shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] rounded-[60px] bg-[#ff725e] text-white text-[64px] not-italic font-bold leading-[normal] px-16 py-4 flex justify-between items-center"
+          >
             START
             <span className="pl-4">
               <svg
@@ -119,7 +111,7 @@ const Home = () => {
                 />
               </svg>
             </span>
-          </button>
+          </Link>
         </section>
       </>
       <footer className="mt-8 flex justify-center">
