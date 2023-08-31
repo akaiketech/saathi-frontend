@@ -3,7 +3,6 @@
 import { ChangeEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Header from "@/common/components/Header";
 
 const tabs = ["Scheme", "Access", "Attention", "Training", "Help", "inclusion"];
 
@@ -18,8 +17,20 @@ const Home = () => {
     setSelectedVoice(event.target.value);
 
   return (
-    <main className="flex min-h-screen flex-col items-center mt-6">
-      <Header />
+    <main className="flex flex-col items-center mt-6">
+      <header>
+        <h1 className="text-[#DC493A] text-8xl not-italic font-bold leading-[normal] text-center">
+          SAATHI
+        </h1>
+        <ol className=" flex justify-evenly mt-4">
+          {tabs.map((tabsName, index) => (
+            <li key={tabsName} className="flex justify-around">
+              <Link href="/"> {tabsName}</Link>
+              {tabs.length - 1 > index && <span className="mx-8">|</span>}
+            </li>
+          ))}
+        </ol>
+      </header>
       <>
         <section className="mt-8">
           <h3 className="text-black text-4xl not-italic font-normal leading-[normal]">
@@ -116,11 +127,12 @@ const Home = () => {
       </>
       <footer className="mt-8 flex justify-center">
         <Image
-          className="ml-16 w-[65%]"
+          className="ml-16 w-[50%] "
           height={1}
           width={1}
           src="/Illustration - Male.svg"
           alt="Illustration - Male.svg"
+          priority
         />
       </footer>
     </main>

@@ -24,7 +24,7 @@ const ChatPage = () => {
           SAATHI
         </h2>
       </header>
-      <div className="bg-[#f1f1f1] rounded-[40px] h-[700px] mt-6 overflow-y-scroll">
+      <div className="bg-[#f1f1f1] rounded-[40px] h-[800px] mt-6 overflow-y-scroll">
         {messages.map((messageObj) => (
           <div
             key={messageObj.message}
@@ -45,7 +45,7 @@ const ChatPage = () => {
         ))}
       </div>
       <footer>
-        <div className="flex justify-center items-center mt-16">
+        <div className="flex justify-center items-center mt-8">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width={188}

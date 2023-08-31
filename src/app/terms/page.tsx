@@ -2,10 +2,24 @@ import Link from "next/link";
 
 import Header from "@/common/components/Header";
 
+const tabs = ["Scheme", "Access", "Attention", "Training", "Help", "inclusion"];
+
 const Terms = () => {
   return (
     <main className="flex min-h-screen flex-col items-center mt-6">
-      <Header />
+      <header>
+        <h1 className="text-[#DC493A] text-8xl not-italic font-bold leading-[normal] text-center">
+          SAATHI
+        </h1>
+        <ol className=" flex justify-evenly">
+          {tabs.map((tabsName, index) => (
+            <li key={tabsName} className="flex justify-around w-full">
+              <Link href="/"> {tabsName}</Link>
+              {tabs.length - 1 > index && <span className="mx-8">|</span>}
+            </li>
+          ))}
+        </ol>
+      </header>
       <section className=" bg-[#F1F1F1] mt-8 rounded-[40px] p-8   w-[95%]">
         <h2 className="text-[#302B27] text-[64px] not-italic font-bold leading-[normal]">
           Terms & Conditions
