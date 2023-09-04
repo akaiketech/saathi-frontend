@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import Header from "@/common/components/Header";
+//import Header from "@/common/components/Header";
 
 const tabs = ["Scheme", "Access", "Attention", "Training", "Help", "inclusion"];
 
