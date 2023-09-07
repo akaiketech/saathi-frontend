@@ -1,6 +1,6 @@
 import React from "react";
-import QuestionBubble from "../components/QuestionBubble";
-import styles from "../components/styles.module.css";
+import QuestionBubble from "./components/QuestionBubble";
+import styles from "./components/styles.module.css";
 
 const QuestionsPage: React.FC = () => {
   return (
