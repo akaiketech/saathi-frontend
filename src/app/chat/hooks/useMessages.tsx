@@ -10,7 +10,7 @@ export const useMessages = () => {
     answer: Answer,
     role: "user" | "ai"
   ) => {
-    setMessages([...messages, { role, question, answer }]);
+    // setMessages([...messages, { question, answer }]);
   };
 
   return { messages, addMessage };
