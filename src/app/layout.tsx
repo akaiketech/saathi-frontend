@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { KoHo, Inder } from "next/font/google";
+import { GlobalProvider } from "./context";
 
 const koHo = KoHo({
   subsets: ["latin"],
@@ -19,7 +20,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${koHo.className} `}>{children}</body>
+      <body className={`${koHo.className} `}>
+        <GlobalProvider>{children}</GlobalProvider>
+      </body>
     </html>
   );
 }
