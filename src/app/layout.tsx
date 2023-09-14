@@ -2,6 +2,9 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { KoHo, Inder } from "next/font/google";
 import { GlobalProvider } from "./context";
+import { ToastContainer } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
 
 const koHo = KoHo({
   subsets: ["latin"],
@@ -22,6 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${koHo.className} `}>
         <GlobalProvider>{children}</GlobalProvider>
+        <ToastContainer />
       </body>
     </html>
   );

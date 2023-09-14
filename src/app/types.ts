@@ -1,13 +1,13 @@
 export interface Question {
   hindiText: string;
   englishText: string;
-  audio: ArrayBuffer;
+  audio: string;
 }
 
 export interface Answer {
   hindiText: string;
   englishText: string;
-  audio: ArrayBuffer;
+  audio: string;
 }
 
 export interface Message {

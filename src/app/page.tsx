@@ -3,18 +3,18 @@
 import { ChangeEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useGlobalContext } from "./context";
 
 const tabs = ["Scheme", "Access", "Attention", "Training", "Help", "inclusion"];
 
 const Home = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState("English");
-  const [selectedVoice, setSelectedVoice] = useState("Female");
+  const { language, setLanguage, voice, setVoice } = useGlobalContext();
 
   const handleLanguageChange = (event: ChangeEvent<HTMLInputElement>) =>
-    setSelectedLanguage(event.target.value);
+    setLanguage(event.target.value);
 
   const handleVoiceChange = (event: ChangeEvent<HTMLInputElement>) =>
-    setSelectedVoice(event.target.value);
+    setVoice(event.target.value);
 
   return (
     <main className="flex flex-col items-center mt-6">
@@ -39,11 +39,11 @@ const Home = () => {
           <section className="rounded-[40px] bg-[#efefef] flex px-16 py-4 mt-4">
             <div className=" mr-8">
               <input
-                id="English"
+                id="english"
                 type="radio"
                 className="bg-[#DC493A] h-8 w-8 mr-4 text-[#DC493A] border-[#DC493A]"
-                value="English"
-                checked={selectedLanguage === "English"}
+                value="english"
+                checked={language === "english"}
                 onChange={handleLanguageChange}
               />
               <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
@@ -52,11 +52,11 @@ const Home = () => {
             </div>
             <div>
               <input
-                id="Hindi"
+                id="hindi"
                 type="radio"
-                value="Hindi"
+                value="hindi"
                 className="bg-[#DC493A] h-8 w-8 mr-4"
-                checked={selectedLanguage === "Hindi"}
+                checked={language === "hindi"}
                 onChange={handleLanguageChange}
               />
               <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
@@ -72,11 +72,11 @@ const Home = () => {
           <form className="rounded-[40px] bg-[#efefef] flex px-16 py-4 mt-4">
             <div className=" mr-8">
               <input
-                id="Female"
+                id="female"
                 type="radio"
-                value="Female"
-                className="bg-[#DC493A] h-8 w-8 mr-4 "
-                checked={selectedVoice === "Female"}
+                value="female"
+                className="bg-[#DC493A] h-8 w-8 mr-4"
+                checked={voice === "female"}
                 onChange={handleVoiceChange}
               />
               <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
@@ -85,11 +85,11 @@ const Home = () => {
             </div>
             <div>
               <input
-                id="Male"
+                id="male"
                 type="radio"
-                value="Male"
+                value="male"
                 className="bg-[#DC493A] h-8 w-8 mr-4"
-                checked={selectedVoice === "Male"}
+                checked={voice === "male"}
                 onChange={handleVoiceChange}
               />
               <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">

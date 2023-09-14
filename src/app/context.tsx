@@ -5,6 +5,8 @@ import React, { createContext, useContext, useState } from "react";
 type GlobalContextProps = {
   language: string;
   setLanguage: React.Dispatch<React.SetStateAction<string>>;
+  voice: string;
+  setVoice: React.Dispatch<React.SetStateAction<string>>;
   sessionId: string;
   setSessionId: React.Dispatch<React.SetStateAction<string>>;
 };
@@ -24,7 +26,8 @@ interface GlobalProviderProps {
 }
 
 export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
-  const [language, setLanguage] = useState<string>("en");
+  const [language, setLanguage] = useState<string>("hindi");
+  const [voice, setVoice] = useState<string>("female");
   const [sessionId, setSessionId] = useState<string>("");
 
   return (
@@ -32,6 +35,8 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
       value={{
         language,
         setLanguage,
+        voice,
+        setVoice,
         sessionId,
         setSessionId,
       }}

@@ -5,23 +5,33 @@ import {
   SpeechTranslationConfig,
   AudioConfig,
   TranslationRecognizer,
+  SpeechSynthesizer,
 } from "microsoft-cognitiveservices-speech-sdk";
+import Lottie from "react-lottie";
+import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
 import { queryApi, textToSpeech } from "./util";
 import { Message } from "../types";
+import Image from "next/image";
+import { useGlobalContext } from "../context";
+
+import animationData from "./mike-animation.json";
 
 const ChatPage = () => {
+  const { language, sessionId, voice } = useGlobalContext();
+  console.log("🚀 ~ file: page.tsx:21 ~ ChatPage ~ language:", language);
   const [isRecording, setIsRecording] = useState(false);
   const [recognizer, setRecognizer] = useState<TranslationRecognizer>();
   const [messages, setMessages] = useState<Message[]>([]);
+  console.log("🚀 ~ file: page.tsx:25 ~ ChatPage ~ messages:", messages);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
-  const [audioChunks, setAudioChunks] = useState<BlobPart[]>([]);
-  console.log("🚀 ~ file: page.tsx:19 ~ ChatPage ~ audioChunks:", audioChunks);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
 
-  console.log("🚀 ~ file: page.tsx:20 ~ ChatPage ~ messages:", messages);
+  const [reload, setReload] = useState(false);
+  const [hindi, setHindi] = useState("");
+  const [english, setEnglish] = useState("");
+
+  let mediaRecorder: MediaRecorder; // Declare at a scope where it can be accessed inside and outside the function
+  const [audioChunks, setAudioChunks] = useState<BlobPart[]>([]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -29,129 +39,266 @@ const ChatPage = () => {
     }
   }, [messages]);
 
-  const initAudioCapture = () => {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((stream) => {
-        console.log("Stream:", stream);
+  // const initAudioCapture = async () => {
+  //   try {
+  //     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  //     const newMediaRecorder = new MediaRecorder(stream);
 
-        const newMediaRecorder = new MediaRecorder(stream);
-        setMediaRecorder(newMediaRecorder);
+  //     setMediaRecorder(newMediaRecorder);
 
-        newMediaRecorder.ondataavailable = (event) => {
-          console.log("Data available:", event.data);
+  //     newMediaRecorder.ondataavailable = (event) => {
+  //       console.log("Data available:", event);
+  //       setAudioChunks((prevAudioChunks) => [...prevAudioChunks, event.data]);
+  //     };
 
-          setAudioChunks((prevAudioChunks) => {
-            const newAudioChunks = [...prevAudioChunks, event.data];
-            console.log("New audio chunks:", newAudioChunks);
-            return newAudioChunks;
-          });
-        };
+  //     newMediaRecorder.onstop = () => {
+  //       console.log("Recorder stopped.");
+  //     };
 
-        newMediaRecorder.onstop = () => {
-          console.log("Recorder stopped.");
-          const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-          const audioUrl = URL.createObjectURL(audioBlob);
-          console.log("🚀 ~ file: page.tsx:55 ~ .then ~ audioUrl:", audioUrl);
-        };
+  //     newMediaRecorder.onerror = (event) => {
+  //       console.error("Error while recording:", event);
+  //     };
 
-        newMediaRecorder.start();
-      })
-      .catch((err) => {
-        console.error("Error initializing audio capture:", err);
-      });
-  };
+  //     newMediaRecorder.start();
+  //     console.log("Recording started");
+  //   } catch (err) {
+  //     console.error("Error initializing audio capture:", err);
+  //   }
+  // };
 
-  const stopAudioCapture = () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop();
-    }
-  };
+  // const stopAudioCapture = () => {
+  //   setIsRecording(false);
+  //   if (mediaRecorder) {
+  //     mediaRecorder.stop();
+  //   }
+  // };
 
-  const getQueryResult = async (index: number) => {
-    const messagesCopy = [...messages];
-    messagesCopy[index].isLoading = true;
+  // const getQueryResult = async (index: number) => {
+  //   const messagesCopy = [...messages];
+  //   messagesCopy[index].isLoading = true;
 
-    const result = await queryApi(
-      messagesCopy[index].question.hindiText ?? "",
-      messagesCopy[index].question.englishText ?? "",
-      "123456789"
-    );
+  //   const result = await queryApi(
+  //     messagesCopy[index].question.hindiText ?? "",
+  //     messagesCopy[index].question.englishText ?? "",
 
-    messagesCopy[index].answer.hindiText = result.hindi_answer;
-    messagesCopy[index].answer.englishText = result.english_answer;
-    messagesCopy[index].isLoading = false;
-    setMessages(messagesCopy);
-  };
+  //     sessionId
+  //   );
 
-  const startRecognition = () => {
+  //   if (result) {
+  //     messagesCopy[index].answer.hindiText = result.hindi_answer;
+  //     messagesCopy[index].answer.englishText = result.english_answer;
+  //     messagesCopy[index].isLoading = false;
+  //     setMessages(messagesCopy);
+  //   }
+  //   messagesCopy[index].isLoading = false;
+  // };
+
+  // const startRecognition = () => {
+  //   const speechKey = process.env.NEXT_PUBLIC_SPEECH_KEY;
+  //   const serviceRegion = process.env.NEXT_PUBLIC_SPEECH_REGION;
+
+  //   const translationConfig = SpeechTranslationConfig.fromSubscription(
+  //     speechKey || "",
+  //     serviceRegion || ""
+  //   );
+
+  //   translationConfig.speechRecognitionLanguage = "hi-IN";
+  //   translationConfig.addTargetLanguage("en");
+
+  //   const audioConfig = AudioConfig.fromDefaultMicrophoneInput();
+  //   const recognizer = new TranslationRecognizer(
+  //     translationConfig,
+  //     audioConfig
+  //   );
+
+  //   const message: Message = {
+  //     question: { englishText: "", hindiText: "", audio: "" },
+  //     answer: { englishText: "", hindiText: "", audio: "" },
+  //     isLoading: false,
+  //   };
+
+  //   recognizer.recognizing = (_, e) => {
+  //     const hindiText = e.result.text;
+  //     const englishText = e.result.translations.get("en");
+
+  //     message.question.englishText += " " + englishText.trim();
+  //     message.question.hindiText += " " + hindiText.trim();
+
+  //     setMessages([...messages, message]);
+  //   };
+
+  //   recognizer.canceled = () => {
+  //     stopAudioCapture();
+  //     setIsRecording(false);
+  //     console.log("Recognition Canceled");
+  //   };
+
+  //   setRecognizer(recognizer);
+  //   recognizer.startContinuousRecognitionAsync();
+  //   setIsRecording(true);
+  // };
+
+  const translationOnceFromMic = async () => {
+    // Retrieve the speech service key and region from environment variables
     const speechKey = process.env.NEXT_PUBLIC_SPEECH_KEY;
     const serviceRegion = process.env.NEXT_PUBLIC_SPEECH_REGION;
 
-    const translationConfig = SpeechTranslationConfig.fromSubscription(
-      speechKey || "",
-      serviceRegion || ""
+    // Create a speech translation config instance with subscription and region.
+    const translationConfig = sdk.SpeechTranslationConfig.fromSubscription(
+      speechKey ?? "",
+      serviceRegion ?? ""
     );
 
-    translationConfig.speechRecognitionLanguage = "hi-IN";
-    translationConfig.addTargetLanguage("en");
+    // Set the source language and target language
+    translationConfig.speechRecognitionLanguage =
+      language === "hindi" ? "hi-IN" : "en-US";
+    translationConfig.addTargetLanguage(language === "hindi" ? "en" : "hi");
 
-    const audioConfig = AudioConfig.fromDefaultMicrophoneInput();
-    const recognizer = new TranslationRecognizer(
+    // Set silence timeout in milliseconds
+    // translationConfig.setProperty(
+    //   sdk.PropertyId[
+    //     sdk.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs
+    //   ],
+    //   "5000"
+    // );
+
+    // Create an audio config with a default microphone as audio input.
+    const audioConfig = sdk.AudioConfig.fromDefaultMicrophoneInput();
+
+    // Create the translation recognizer
+    const recognizer = new sdk.TranslationRecognizer(
       translationConfig,
       audioConfig
     );
 
+    console.log("Say something...");
+
     const message: Message = {
-      question: { englishText: "", hindiText: "", audio: new ArrayBuffer(0) },
-      answer: { englishText: "", hindiText: "", audio: new ArrayBuffer(0) },
+      question: { englishText: "", hindiText: "", audio: "" },
+      answer: { englishText: "", hindiText: "", audio: "" },
       isLoading: false,
     };
 
-    initAudioCapture();
+    const recognizeOnceAsync = (): Promise<sdk.TranslationRecognitionResult> =>
+      new Promise((resolve, reject) => {
+        recognizer.recognizeOnceAsync(
+          (result) => resolve(result as sdk.TranslationRecognitionResult),
+          reject
+        );
+      });
 
-    recognizer.recognizing = (_, e) => {
-      const hindiText = e.result.text;
-      const englishText = e.result.translations.get("en");
+    const result = await recognizeOnceAsync();
 
-      message.question.englishText += " " + englishText.trim();
-      message.question.hindiText += " " + hindiText.trim();
+    if (result.reason === sdk.ResultReason.TranslatedSpeech) {
+      if (language === "hindi") {
+        message.question.hindiText = result.text;
+        message.question.englishText = result.translations.get("en");
+      } else {
+        message.question.englishText = result.text;
+        message.question.hindiText = result.translations.get("hi");
+      }
+      message.isLoading = true;
+      console.log(
+        "🚀 ~ file: page.tsx:200 ~ translationOnceFromMic ~ message:",
+        message
+      );
 
-      setMessages([...messages, message]);
-    };
-
-    recognizer.canceled = () => {
-      stopAudioCapture();
+      setMessages((prevMsgs) => [...prevMsgs, message]);
       setIsRecording(false);
-      console.log("Recognition Canceled");
-    };
 
-    setRecognizer(recognizer);
-    recognizer.startContinuousRecognitionAsync();
-    setIsRecording(true);
+      const data = await queryApi({
+        sessionId,
+        hindiQuery: message.question.hindiText,
+        englishQuery: message.question.englishText,
+      });
+      if (data) {
+        message.answer.hindiText = data.hindi_answer;
+        message.answer.englishText = data.english_answer;
+      }
+      message.isLoading = false;
+
+      setReload(!reload);
+      setMessages((prevMsgs) => {
+        console.log(
+          "🚀 ~ file: page.tsx:204 ~ translationOnceFromMic ~ data:",
+          data
+        );
+        const index = prevMsgs.length;
+        let currentMsg = prevMsgs[index - 1];
+        currentMsg = message;
+        console.log(
+          "🚀 ~ file: page.tsx:219 ~ setMessages ~ currentMsg:",
+          currentMsg
+        );
+        return prevMsgs;
+      });
+    } else if (result.reason === sdk.ResultReason.RecognizedSpeech) {
+      console.log(`Recognized: ${result.text}`);
+    } else if (result.reason === sdk.ResultReason.NoMatch) {
+      console.log("No speech could be recognized.");
+    }
   };
 
   const stopRecognition = () => {
     if (recognizer) {
-      stopAudioCapture();
       recognizer.stopContinuousRecognitionAsync();
       setIsRecording(false);
-      getQueryResult(messages.length - 1);
     }
   };
 
-  const playAudio = async (hindiText: string) => {
-    try {
-      await textToSpeech(hindiText);
-    } catch (error) {
-      console.error("Failed to convert text to speech", error);
-    }
+  // const playAudio = async () => {
+  //   try {
+  //     await textToSpeech();
+  //   } catch (error) {
+  //     console.error("Failed to convert text to speech", error);
+  //   }
+  // };
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: animationData,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
+  const synthesizeSpeech = (text: string) => {
+    const speechKey = process.env.NEXT_PUBLIC_SPEECH_KEY;
+    const serviceRegion = process.env.NEXT_PUBLIC_SPEECH_REGION;
+
+    const speechConfig = sdk.SpeechConfig.fromSubscription(
+      speechKey ?? "",
+      serviceRegion ?? ""
+    );
+    const audioConfig = sdk.AudioConfig.fromDefaultSpeakerOutput();
+
+    const speechSynthesizer = new sdk.SpeechSynthesizer(
+      speechConfig,
+      audioConfig
+    );
+
+    speechSynthesizer.speakTextAsync(
+      text,
+      (result) => {
+        if (result) {
+          speechSynthesizer.close();
+          return result.audioData;
+        }
+      },
+      (error) => {
+        console.log(error);
+        speechSynthesizer.close();
+      }
+    );
   };
 
   return (
     <main className="pt-6 pl-6 pr-6">
       <header>
-        <h2 className="text-[#DC493A] text-[64px] not-italic font-bold leading-[normal] ">
+        <h2
+          className="text-[#DC493A] text-[64px] not-italic font-bold leading-[normal] "
+          // onClick={synthesizeSpeech}
+        >
           SAATHI
         </h2>
       </header>
@@ -162,19 +309,52 @@ const ChatPage = () => {
         {messages.length ? (
           messages.map((messageObj, index) => (
             <div key={index} className="w-full p-8 flex flex-col">
-              <div className="w-1/2  p-3 rounded-[30px_30px_0px_30px] bg-[#ff725e] text-white text-[32px] not-italic font-semibold leading-[normal] ml-auto">
-                {messageObj.question.hindiText}
+              <div className="w-1/2  p-3 rounded-[30px_30px_0px_30px] bg-[#ff725e] ml-auto flex">
+                <div className="text-white text-[32px] not-italic font-semibold leading-[normal] ">
+                  {language === "hindi"
+                    ? messageObj.question.hindiText
+                    : messageObj.question.englishText}
+                </div>
+                <Image
+                  src="../avatar.svg"
+                  alt="avatar"
+                  height={36}
+                  width={36}
+                  className=" ml-auto"
+                />
               </div>
               {messageObj.isLoading ? (
                 <div>Loading...</div>
               ) : (
-                messageObj.answer.hindiText && (
+                (messageObj.answer.hindiText ||
+                  messageObj.answer.englishText) && (
                   <>
-                    <div className="w-1/2  p-3 rounded-[30px_30px_30px_0px] bg-[#FFCBC366] text-black text-[32px] not-italic font-semibold leading-[normal]">
-                      {messageObj.answer.hindiText}
+                    <div className="w-1/2  p-3 rounded-[30px_30px_30px_0px] bg-[#FFCBC366] text-black ">
+                      <div className="text-[32px] not-italic font-semibold leading-[normal] flex">
+                        <Image
+                          src="../avatar.svg"
+                          alt="avatar"
+                          height={36}
+                          width={36}
+                          className="ml-2 "
+                        />
+                        {language === "hindi"
+                          ? messageObj.answer.hindiText
+                          : messageObj.answer.englishText}
+                      </div>
                     </div>
                     <button
-                      onClick={() => playAudio(messageObj.answer.hindiText)}
+                      onClick={() => {
+                        const currentMesssage = messages[messages.length - 1];
+
+                        textToSpeech(
+                          language === "hindi"
+                            ? currentMesssage.answer.hindiText
+                            : currentMesssage.answer.englishText,
+                          language,
+                          voice
+                        );
+                      }}
                     >
                       Play Audio
                     </button>
@@ -193,9 +373,17 @@ const ChatPage = () => {
       <footer>
         <div className="flex justify-center items-center mt-8">
           {isRecording ? (
-            <div onClick={stopRecognition}>STOP RECORDING</div>
+            <div onClick={stopRecognition}>
+              <Lottie options={defaultOptions} height={200} width={200} />
+            </div>
           ) : (
-            <div onClick={startRecognition}>
+            // <div onClick={startRecognition}>
+            <div
+              onClick={() => {
+                setIsRecording(true);
+                translationOnceFromMic().catch((err) => console.error(err));
+              }}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width={188}
@@ -273,6 +461,7 @@ const ChatPage = () => {
           )}
         </div>
       </footer>
+      {/* <div onClick={}>End</div> */}
     </main>
   );
 };

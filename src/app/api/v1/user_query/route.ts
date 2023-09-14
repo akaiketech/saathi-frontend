@@ -1,27 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const generateSessionId = () => {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-};
-
 export const POST = async (req: NextRequest) => {
   try {
-    const { language } = await req.json();
-    console.log("🚀 ~ file: route.ts:14 ~ POST ~ language:", language);
+    const { hindiQuery, englishQuery, sessionId } = await req.json();
 
-    const sessionId = generateSessionId();
+    const reqBody = {
+      hindi_query: hindiQuery,
+      english_query: englishQuery,
+      session_id: sessionId,
+    };
+    console.log("🚀 ~ file: route.ts:13 ~ POST ~ reqBody:", reqBody);
 
     const response = await fetch(
-      `${process.env.BACKEND_BASE_URL}/api/v1/start_session/`,
+      `${process.env.BACKEND_BASE_URL}/api/v1/user_query/`,
       {
-        body: JSON.stringify({
-          user_language: language,
-          session_id: sessionId,
-        }),
+        body: JSON.stringify(reqBody),
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -34,7 +27,7 @@ export const POST = async (req: NextRequest) => {
     console.log("🚀 ~ file: route.ts:38 ~ POST ~ responseData:", responseData);
 
     if (!response.ok) {
-      const errorText = `Failed to start session: ${response.status} ${response.statusText}`;
+      const errorText = `Failed to fetch the result: ${response.status} ${response.statusText}`;
       return NextResponse.json(
         { error: errorText },
         { status: response.status }
