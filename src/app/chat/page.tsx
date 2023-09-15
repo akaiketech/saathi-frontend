@@ -180,11 +180,11 @@ const ChatPage = () => {
               <h3 className="text-xl mb-4 text-center">
                 We'd love your feedback!
               </h3>
-              <div className="flex my-4 justify-center">
+              <div className="flex my-6 justify-center">
                 {[1, 2, 3, 4, 5].map((rating) => (
                   <button
                     key={rating}
-                    className={`p-2 text-2xl  ${
+                    className={`p-2 text-4xl  ${
                       starRating >= rating ? "text-yellow-500" : "text-gray-300"
                     }`}
                     onClick={() => handleRatingClick(rating)}
@@ -350,7 +350,7 @@ const ChatPage = () => {
         <div className="flex justify-center items-center mt-8">
           {isRecording ? (
             <div>
-              <Lottie options={defaultOptions} height={200} width={200} />
+              <Lottie options={defaultOptions} height={150} width={150} />
             </div>
           ) : (
             <div

@@ -83,7 +83,7 @@ const Home = () => {
                 onChange={handleVoiceChange}
               />
               <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
-                Female
+                {language === "hindi" ? "महिला" : "Female"}
               </label>
             </div>
             <div>
@@ -96,7 +96,7 @@ const Home = () => {
                 onChange={handleVoiceChange}
               />
               <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
-                Male
+                {language === "hindi" ? "पुरुष" : "Male"}
               </label>
             </div>
           </form>
@@ -106,7 +106,7 @@ const Home = () => {
             href="/terms"
             className="shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] rounded-[60px] bg-[#ff725e] text-white text-[64px] not-italic font-bold leading-[normal] px-16 py-4 flex justify-between items-center"
           >
-            START
+            {language === "hindi" ? "शुरू करें" : "START"}
             <span className="pl-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
