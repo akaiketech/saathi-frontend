@@ -11,7 +11,6 @@ const generateSessionId = () => {
 export const POST = async (req: NextRequest) => {
   try {
     const { language } = await req.json();
-    console.log("🚀 ~ file: route.ts:14 ~ POST ~ language:", language);
 
     const sessionId = generateSessionId();
 
@@ -31,7 +30,6 @@ export const POST = async (req: NextRequest) => {
     );
 
     const responseData = await response.json();
-    console.log("🚀 ~ file: route.ts:38 ~ POST ~ responseData:", responseData);
 
     if (!response.ok) {
       const errorText = `Failed to start session: ${response.status} ${response.statusText}`;

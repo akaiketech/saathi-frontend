@@ -1,0 +1,26 @@
+/* QuestionBubble.module.css */
+
+.fullscreenText {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #fff;
+  color: #ff725e;
+  font-size: 36px; /* Adjust font size as needed */
+  text-align: center;
+  animation: fadeInOut 10s ease-in-out infinite; /* Define the transition animation */
+}
+
+.question {
+  font-weight: bold;
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0; /* Start and end with no opacity */
+  }
+  12%, 88%{
+    opacity: 1; /* Fully visible in the quarter of the animation */
+  }
+}

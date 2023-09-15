@@ -17,12 +17,12 @@ const Home = () => {
     setVoice(event.target.value);
 
   return (
-    <main className="flex flex-col items-center mt-6">
+    <main className="flex flex-col items-center mt-2">
       <header>
         <h1 className="text-[#DC493A] text-8xl not-italic font-bold leading-[normal] text-center">
           SAATHI
         </h1>
-        <ol className=" flex justify-evenly mt-4">
+        <ol className=" flex justify-evenly mt-2">
           {tabs.map((tabsName, index) => (
             <li key={tabsName} className="flex justify-around">
               <Link href="/" className="text-xl">
@@ -35,7 +35,7 @@ const Home = () => {
         </ol>
       </header>
       <>
-        <section className="mt-8">
+        <section className="mt-4">
           <h3 className="text-black text-4xl not-italic font-normal leading-[normal]">
             Select Language
           </h3>
@@ -68,7 +68,7 @@ const Home = () => {
             </div>
           </section>
         </section>
-        <section className="mt-8">
+        <section className="mt-4">
           <h3 className="text-black text-4xl not-italic font-normal leading-[normal]">
             Select Voice
           </h3>
@@ -83,7 +83,7 @@ const Home = () => {
                 onChange={handleVoiceChange}
               />
               <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
-                Female
+                {language === "hindi" ? "महिला" : "Female"}
               </label>
             </div>
             <div>
@@ -96,7 +96,7 @@ const Home = () => {
                 onChange={handleVoiceChange}
               />
               <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
-                Male
+                {language === "hindi" ? "पुरुष" : "Male"}
               </label>
             </div>
           </form>
@@ -106,7 +106,7 @@ const Home = () => {
             href="/terms"
             className="shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] rounded-[60px] bg-[#ff725e] text-white text-[64px] not-italic font-bold leading-[normal] px-16 py-4 flex justify-between items-center"
           >
-            START
+            {language === "hindi" ? "शुरू करें" : "START"}
             <span className="pl-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +130,7 @@ const Home = () => {
       </>
       <footer className="mt-8 flex justify-center">
         <Image
-          className=" w-full "
+          className=" w-full"
           height={1}
           width={1}
           src="/Illustration - Male.svg"

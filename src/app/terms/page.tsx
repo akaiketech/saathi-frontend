@@ -28,7 +28,7 @@ const Terms = () => {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center mt-6">
+    <main className="flex min-h-screen flex-col items-center mt-2">
       <header>
         <h1 className="text-[#DC493A] text-8xl not-italic font-bold leading-[normal] text-center">
           SAATHI
@@ -45,12 +45,41 @@ const Terms = () => {
           ))}
         </ol>
       </header>
-      <section className=" bg-[#F1F1F1] mt-8 rounded-[40px] p-8   w-[95%]">
+      <section className=" bg-[#F1F1F1] mt-2 rounded-[40px] p-8   w-[95%]">
         <h2 className="text-[#302B27] text-[48px] not-italic font-bold leading-[normal]">
-          Terms & Conditions
+          {language === "hindi" ? "नियम और शर्तें" : "Terms & Conditions"}
         </h2>
-        <div className="mt-4 h-[600px] overflow-y-scroll text-[#6D6D6D] text-xl not-italic font-normal leading-[normal]">
+        <div className="mt-2 h-[600px] overflow-y-scroll text-[#6D6D6D] text-xl not-italic font-normal leading-[normal]">
           {language === "hindi" ? (
+            <div>
+              <div>
+                <div className="my-4">नियम और शर्तें</div>
+                <ul>
+                  <li className="my-2">
+                    ● SAATHI का उद्देश्य आपके प्रश्नों के लिए आपको उत्तर प्रदान
+                    करना है।
+                  </li>
+                  <li className="my-2">
+                    ● SAATHI आपके प्रश्नों और उसके द्वारा प्रदान किए गए उत्तरों
+                    को संग्रहित करता है ताकि हम यह सत्यापित कर सकें कि उत्तर
+                    आपके प्रश्न के लिए उपयुक्त और संबंधित थे।
+                  </li>
+                  <li className="my-2">
+                    ● SAATHI आपकी व्यक्तिगत जानकारी का संग्रहित नहीं करता है।
+                  </li>
+                  <li className="my-2">
+                    ● SAATHI एक बहुत ही सहायक उपकरण बनने का उद्देश्य रखता है और
+                    उत्तर में किसी भी प्रकार की पक्षपात की अनजाने में कोई भी चाह
+                    कर नहीं किया जाता है।
+                  </li>
+                </ul>
+                <div>
+                  SAATHI से प्रश्न पूछकर आप उपरोक्त नियमों और शर्तों से सहमत हो
+                  रहे हैं।
+                </div>
+              </div>
+            </div>
+          ) : (
             <div>
               <div className="font-semibold">
                 SAATHI User Consent Terms and Conditions
@@ -80,26 +109,16 @@ const Terms = () => {
                     agreeing to the above terms and conditions.
                   </li>
                 </ul>
+                <div>
+                  By asking a query to SAATHI you are agreeing to the above
+                  terms and conditions.
+                </div>
               </div>
-            </div>
-          ) : (
-            <div>
-              SAATHI User Consent Terms and Conditions SAATHI is developed by a
-              consortium of researchers (Indian Institute of Science, Bangalore,
-              and Oxford Brookes University, UK), technical experts from Akaike
-              Technologies and the banking professionals from Kotak Mahindra
-              Bank. ● SAATHI aims to provide you with answers for your queries.
-              ● SAATHI stores your questions and the answers that it provides so
-              that we can validate and verify if the answers were appropriate
-              and relevant to your question. ● SAATHI does not ask or store your
-              personal information. ● SAATHI aims to be a very helpful tool and
-              any bias in the answer is unintentional. By asking a query to
-              SAATHI you are agreeing to the above terms and conditions.
             </div>
           )}
         </div>
       </section>
-      <footer className="mt-16 flex justify-evenly items-center w-full">
+      <footer className="mt-8 flex justify-evenly items-center w-full">
         <div
           onClick={handleAccept}
           className={`${
@@ -107,7 +126,13 @@ const Terms = () => {
           } shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] rounded-[60px] bg-[#ff725e] text-white text-[50px] not-italic font-bold leading-[normal]  flex justify-between items-center w-[40%] py-4`}
         >
           <div className="flex justify-between ">
-            <div className="ml-8">{loading ? "Loading..." : "ACCEPT"}</div>
+            <div className="ml-8">
+              {loading
+                ? "Loading..."
+                : language === "hindi"
+                ? "स्वीकार"
+                : "ACCEPT"}
+            </div>
             {!loading && (
               <Image
                 src="../check.svg"
@@ -136,7 +161,7 @@ const Terms = () => {
             loading ? "opacity-50 pointer-events-none" : "" // Disable button when loading
           } border shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] rounded-[60px] border-solid border-[#D6D6D6] text-[#302B27] text-[50px] not-italic font-bold leading-[normal] px-8 py-4 flex justify-between items-center`}
         >
-          DECLINE
+          {language === "hindi" ? "अस्वीकार" : "DECLINE"}
           <Image
             src="../cross.svg"
             alt="avatar"

@@ -1,24 +1,6 @@
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 import { toast } from "react-toastify";
 
-const blobToBase64 = (audioChunks: BlobPart[]) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      const result = reader.result as string;
-
-      if (result) {
-        resolve(result);
-      } else {
-        reject("Failed to read Blob data as Base64.");
-      }
-    };
-
-    reader.readAsDataURL(new Blob(audioChunks));
-  });
-};
-
 export const queryApi = async ({
   hindiQuery,
   englishQuery,
@@ -88,7 +70,7 @@ export const textToSpeech = (
   //   synthesizer.close();
   // };
 
-  let estimatedDuration = text.length * 100; // 50ms per character is just an example.
+  let estimatedDuration = text.length * 90;
 
   synthesizer.synthesisStarted = (_s, _e) => {
     onStart(); // Call your onStart function
@@ -106,8 +88,32 @@ export const textToSpeech = (
       }
     },
     (error) => {
-      console.log(error);
+      toast.error(error, {
+        autoClose: 5000,
+        position: "top-right",
+      });
       synthesizer.close();
     }
   );
+};
+
+export const feedBackApi = async (sessionId: string, rating: number) => {
+  const res = await fetch("/api/v1/session_feedback", {
+    method: "POST",
+    body: JSON.stringify({
+      rating,
+      sessionId,
+    }),
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    toast.error(data.error, {
+      autoClose: 5000,
+      position: "top-right",
+    });
+  } else {
+    return data;
+  }
 };
