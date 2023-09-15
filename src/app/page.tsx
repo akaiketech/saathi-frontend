@@ -25,7 +25,10 @@ const Home = () => {
         <ol className=" flex justify-evenly mt-4">
           {tabs.map((tabsName, index) => (
             <li key={tabsName} className="flex justify-around">
-              <Link href="/"> {tabsName}</Link>
+              <Link href="/" className="text-xl">
+                {" "}
+                {tabsName}
+              </Link>
               {tabs.length - 1 > index && <span className="mx-8">|</span>}
             </li>
           ))}
@@ -39,19 +42,6 @@ const Home = () => {
           <section className="rounded-[40px] bg-[#efefef] flex px-16 py-4 mt-4">
             <div className=" mr-8">
               <input
-                id="english"
-                type="radio"
-                className="bg-[#DC493A] h-8 w-8 mr-4 text-[#DC493A] border-[#DC493A]"
-                value="english"
-                checked={language === "english"}
-                onChange={handleLanguageChange}
-              />
-              <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
-                English
-              </label>
-            </div>
-            <div>
-              <input
                 id="hindi"
                 type="radio"
                 value="hindi"
@@ -61,6 +51,19 @@ const Home = () => {
               />
               <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
                 हिन्दी
+              </label>
+            </div>
+            <div>
+              <input
+                id="english"
+                type="radio"
+                className="bg-[#DC493A] h-8 w-8 mr-4 text-[#DC493A] border-[#DC493A]"
+                value="english"
+                checked={language === "english"}
+                onChange={handleLanguageChange}
+              />
+              <label className="text-[#302B27] text-5xl not-italic font-bold leading-[normal]">
+                English
               </label>
             </div>
           </section>
@@ -127,7 +130,7 @@ const Home = () => {
       </>
       <footer className="mt-8 flex justify-center">
         <Image
-          className="ml-16 w-[50%] "
+          className=" w-full "
           height={1}
           width={1}
           src="/Illustration - Male.svg"

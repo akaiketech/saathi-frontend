@@ -45,9 +45,13 @@ export const queryApi = async ({
   }
 };
 
-export const textToSpeech = (text: string, language: string, voice: string) => {
-  console.log("🚀 ~ file: util.ts:49 ~ textToSpeech ~ voice:", voice);
-  console.log("🚀 ~ file: util.ts:49 ~ textToSpeech ~ language:", language);
+export const textToSpeech = (
+  text: string,
+  language: string,
+  voice: string,
+  onStart: any,
+  onEnd: any
+) => {
   const speechKey = process.env.NEXT_PUBLIC_SPEECH_KEY;
   const serviceRegion = process.env.NEXT_PUBLIC_SPEECH_REGION;
 
@@ -74,6 +78,24 @@ export const textToSpeech = (text: string, language: string, voice: string) => {
 
   const audioConfig = sdk.AudioConfig.fromDefaultSpeakerOutput();
   const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
+
+  // synthesizer.synthesisStarted = (_s, _e) => {
+  //   onStart();
+  // };
+
+  // synthesizer.synthesisCompleted = (_s, _e) => {
+  //   onEnd();
+  //   synthesizer.close();
+  // };
+
+  let estimatedDuration = text.length * 100; // 50ms per character is just an example.
+
+  synthesizer.synthesisStarted = (_s, _e) => {
+    onStart(); // Call your onStart function
+    setTimeout(() => {
+      onEnd(); // Call your onEnd function
+    }, estimatedDuration);
+  };
 
   synthesizer.speakTextAsync(
     text,
