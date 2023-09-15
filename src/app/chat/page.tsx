@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 import {
   SpeechTranslationConfig,
   AudioConfig,
@@ -11,7 +12,7 @@ import {
 import Lottie from "react-lottie";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
-import { queryApi, textToSpeech } from "./util";
+import { feedBackApi, queryApi, textToSpeech } from "./util";
 import { Message } from "../types";
 import Image from "next/image";
 import { useGlobalContext } from "../context";
@@ -20,26 +21,20 @@ import animationData from "./mike-animation.json";
 import loadingData from "./loading.json";
 
 const ChatPage = () => {
+  const router = useRouter();
   const { language, sessionId, voice } = useGlobalContext();
-  console.log("🚀 ~ file: page.tsx:21 ~ ChatPage ~ language:", language);
   const [isRecording, setIsRecording] = useState(false);
-  const [recognizer, setRecognizer] = useState<TranslationRecognizer>();
   const [messages, setMessages] = useState<Message[]>([]);
-  console.log("🚀 ~ file: page.tsx:25 ~ ChatPage ~ messages:", messages);
+  const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
+  const [starRating, setStarRating] = useState(0);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
-  const messagesContainerRef = useRef<null | HTMLDivElement>(null);
 
   const [reload, setReload] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  console.log(
-    "🚀 ~ file: page.tsx:33 ~ ChatPage ~ isAudioPlaying:",
-    isAudioPlaying
-  );
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-      // messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [JSON.stringify(messages)]);
 
@@ -120,14 +115,16 @@ const ChatPage = () => {
         currentMsg = message;
         return prevMsgs;
       });
-    }
-  };
 
-  const stopRecognition = () => {
-    setIsRecording(false);
-
-    if (recognizer) {
-      recognizer.stopContinuousRecognitionAsync();
+      textToSpeech(
+        language === "hindi"
+          ? message.answer.hindiText
+          : message.answer.englishText,
+        language,
+        voice,
+        () => setIsAudioPlaying(true),
+        () => setIsAudioPlaying(false)
+      );
     }
   };
 
@@ -149,7 +146,13 @@ const ChatPage = () => {
     },
   };
 
-  const handleEndConversation = () => {};
+  const handleEndConversation = () => {
+    setIsFeedbackDialogOpen(true);
+  };
+
+  const handleRatingClick = (rating: number) => {
+    setStarRating(rating);
+  };
 
   return (
     <main className="pt-6 pl-6 pr-6">
@@ -171,6 +174,66 @@ const ChatPage = () => {
             className="ml-2"
           />
         </button>
+        {isFeedbackDialogOpen && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-8 rounded-lg w-96">
+              <h3 className="text-xl mb-4 text-center">
+                We'd love your feedback!
+              </h3>
+              <div className="flex my-4 justify-center">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    className={`p-2 text-2xl  ${
+                      starRating >= rating ? "text-yellow-500" : "text-gray-300"
+                    }`}
+                    onClick={() => handleRatingClick(rating)}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+              {/* <textarea
+                className="border rounded p-2 w-full mb-4"
+                rows={4}
+                placeholder="Share your feedback..."
+              ></textarea> */}
+              <div className="flex justify-evenly">
+                <button
+                  className="bg-red-500 text-white p-2 rounded mr-2"
+                  onClick={() => {
+                    setStarRating(0);
+                    setIsFeedbackDialogOpen(false);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="bg-blue-500 text-white p-2 rounded"
+                  onClick={async () => {
+                    if (starRating === 0) {
+                      toast.info(
+                        "please provide us with rating. so, that we will be able to help you better.",
+                        {
+                          autoClose: 5000,
+                          position: "top-right",
+                        }
+                      );
+                      return;
+                    }
+                    const data = await feedBackApi(sessionId, starRating);
+                    if (data) {
+                      setIsFeedbackDialogOpen(false);
+                      router.replace("/");
+                    }
+                  }}
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
       <div
         className="bg-[#f9f6f6] rounded-[40px] h-[800px] mt-6 overflow-y-scroll"
@@ -211,8 +274,8 @@ const ChatPage = () => {
                     <div className="flex items-end">
                       <div className="mr-1">
                         <Image
-                          src="/avatar.svg"
-                          alt="avatar"
+                          src="/chatBot.png"
+                          alt="chatBot"
                           height={36}
                           width={36}
                         />
@@ -229,17 +292,18 @@ const ChatPage = () => {
                       <button
                         className="flex items-center"
                         onClick={() => {
-                          const currentMesssage = messages[messages.length - 1];
+                          const currentMesssage = messages[index];
 
-                          textToSpeech(
-                            language === "hindi"
-                              ? currentMesssage.answer.hindiText
-                              : currentMesssage.answer.englishText,
-                            language,
-                            voice,
-                            () => setIsAudioPlaying(true),
-                            () => setIsAudioPlaying(false)
-                          );
+                          isAudioPlaying ||
+                            textToSpeech(
+                              language === "hindi"
+                                ? currentMesssage.answer.hindiText
+                                : currentMesssage.answer.englishText,
+                              language,
+                              voice,
+                              () => setIsAudioPlaying(true),
+                              () => setIsAudioPlaying(false)
+                            );
                         }}
                       >
                         <Image
@@ -285,7 +349,7 @@ const ChatPage = () => {
       <footer>
         <div className="flex justify-center items-center mt-8">
           {isRecording ? (
-            <div onClick={stopRecognition}>
+            <div>
               <Lottie options={defaultOptions} height={200} width={200} />
             </div>
           ) : (
@@ -299,8 +363,8 @@ const ChatPage = () => {
             >
               <Image
                 src={"../chatMicrophone.svg"}
-                height={200}
-                width={200}
+                height={150}
+                width={150}
                 alt="chatMicrophone.svg"
               />
             </div>

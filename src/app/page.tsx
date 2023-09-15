@@ -17,12 +17,12 @@ const Home = () => {
     setVoice(event.target.value);
 
   return (
-    <main className="flex flex-col items-center mt-6">
+    <main className="flex flex-col items-center mt-2">
       <header>
         <h1 className="text-[#DC493A] text-8xl not-italic font-bold leading-[normal] text-center">
           SAATHI
         </h1>
-        <ol className=" flex justify-evenly mt-4">
+        <ol className=" flex justify-evenly mt-2">
           {tabs.map((tabsName, index) => (
             <li key={tabsName} className="flex justify-around">
               <Link href="/" className="text-xl">
@@ -35,7 +35,7 @@ const Home = () => {
         </ol>
       </header>
       <>
-        <section className="mt-8">
+        <section className="mt-4">
           <h3 className="text-black text-4xl not-italic font-normal leading-[normal]">
             Select Language
           </h3>
@@ -68,7 +68,7 @@ const Home = () => {
             </div>
           </section>
         </section>
-        <section className="mt-8">
+        <section className="mt-4">
           <h3 className="text-black text-4xl not-italic font-normal leading-[normal]">
             Select Voice
           </h3>
@@ -130,7 +130,7 @@ const Home = () => {
       </>
       <footer className="mt-8 flex justify-center">
         <Image
-          className=" w-full "
+          className=" w-full"
           height={1}
           width={1}
           src="/Illustration - Male.svg"

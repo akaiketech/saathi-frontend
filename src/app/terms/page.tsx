@@ -28,7 +28,7 @@ const Terms = () => {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center mt-6">
+    <main className="flex min-h-screen flex-col items-center mt-2">
       <header>
         <h1 className="text-[#DC493A] text-8xl not-italic font-bold leading-[normal] text-center">
           SAATHI
@@ -45,11 +45,11 @@ const Terms = () => {
           ))}
         </ol>
       </header>
-      <section className=" bg-[#F1F1F1] mt-8 rounded-[40px] p-8   w-[95%]">
+      <section className=" bg-[#F1F1F1] mt-2 rounded-[40px] p-8   w-[95%]">
         <h2 className="text-[#302B27] text-[48px] not-italic font-bold leading-[normal]">
           Terms & Conditions
         </h2>
-        <div className="mt-4 h-[600px] overflow-y-scroll text-[#6D6D6D] text-xl not-italic font-normal leading-[normal]">
+        <div className="mt-2 h-[600px] overflow-y-scroll text-[#6D6D6D] text-xl not-italic font-normal leading-[normal]">
           {language === "hindi" ? (
             <div>
               <div className="font-semibold">
@@ -99,7 +99,7 @@ const Terms = () => {
           )}
         </div>
       </section>
-      <footer className="mt-16 flex justify-evenly items-center w-full">
+      <footer className="mt-8 flex justify-evenly items-center w-full">
         <div
           onClick={handleAccept}
           className={`${
