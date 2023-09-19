@@ -1,4 +1,5 @@
 "use client";
+
 import { FC, useState, useEffect } from "react";
 import Lottie from "react-lottie";
 
@@ -27,15 +28,19 @@ const QuestionBubble: FC = () => {
   }, [language]);
 
   useEffect(() => {
-    if (questions.length === 0) return;
+    if (questions.length === 0) {
+      return;
+    }
 
     const interval = setInterval(() => {
       setCurrentQuestionIndex((prevIndex) =>
         prevIndex === questions.length - 1 ? 0 : prevIndex + 1
       );
-    }, 10000);
+    }, 3000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval); // Clear the interval when component unmounts
+    };
   }, [questions]);
 
   const defaultOptionsForLoading = {

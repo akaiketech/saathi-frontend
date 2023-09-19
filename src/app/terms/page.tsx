@@ -8,7 +8,7 @@ import { useGlobalContext } from "../context";
 import { startSessionApi } from "./util";
 import Image from "next/image";
 
-const tabs = ["Scheme", "Access", "Attention", "Training", "Help", "inclusion"];
+const tabs = ["Scheme", "Access", "Attention", "Training", "Help", "Inclusion"];
 
 const Terms = () => {
   const router = useRouter();
@@ -18,7 +18,6 @@ const Terms = () => {
   const handleAccept = async () => {
     setLoading(true);
     startSessionApi(language, (id: string) => {
-      console.log("🚀 ~ file: page.tsx:20 ~ startSessionApi ~ id:", id);
       setSessionId(id);
       router.push("/chat");
     });
@@ -77,6 +76,10 @@ const Terms = () => {
                   SAATHI से प्रश्न पूछकर आप उपरोक्त नियमों और शर्तों से सहमत हो
                   रहे हैं।
                 </div>
+                <div className="my-2">
+                  यह परियोजना बिल एंड मेलिंडा गेट्स फाउंडेशन द्वारा वित्त पोषित
+                  है
+                </div>
               </div>
             </div>
           ) : (
@@ -105,13 +108,15 @@ const Terms = () => {
                   </li>
                   <li className="my-2">
                     ● SAATHI aims to be a very helpful tool and any bias in the
-                    answer is unintentional. By asking a query to SAATHI you are
-                    agreeing to the above terms and conditions.
+                    answer is unintentional.
                   </li>
                 </ul>
                 <div>
                   By asking a query to SAATHI you are agreeing to the above
                   terms and conditions.
+                </div>
+                <div className="my-2">
+                  This project is funded by the Bill & Melinda Gates Foundation
                 </div>
               </div>
             </div>

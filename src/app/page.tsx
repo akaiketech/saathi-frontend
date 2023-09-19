@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useGlobalContext } from "./context";
 
-const tabs = ["Scheme", "Access", "Attention", "Training", "Help", "inclusion"];
+const tabs = ["Scheme", "Access", "Attention", "Training", "Help", "Inclusion"];
 
 const Home = () => {
   const { language, setLanguage, voice, setVoice } = useGlobalContext();
@@ -37,7 +37,7 @@ const Home = () => {
       <>
         <section className="mt-4">
           <h3 className="text-black text-4xl not-italic font-normal leading-[normal]">
-            Select Language
+            {language === "hindi" ? "भाषा चुने" : "Select Language"}
           </h3>
           <section className="rounded-[40px] bg-[#efefef] flex px-16 py-4 mt-4">
             <div className=" mr-8">
@@ -70,7 +70,7 @@ const Home = () => {
         </section>
         <section className="mt-4">
           <h3 className="text-black text-4xl not-italic font-normal leading-[normal]">
-            Select Voice
+            {language === "hindi" ? "आवाज चुनें" : "Select Voice"}
           </h3>
           <form className="rounded-[40px] bg-[#efefef] flex px-16 py-4 mt-4">
             <div className=" mr-8">

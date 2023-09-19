@@ -3,12 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import {
-  SpeechTranslationConfig,
-  AudioConfig,
-  TranslationRecognizer,
-  SpeechSynthesizer,
-} from "microsoft-cognitiveservices-speech-sdk";
 import Lottie from "react-lottie";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
@@ -28,6 +22,8 @@ const ChatPage = () => {
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   const [starRating, setStarRating] = useState(0);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const [ttsController, setTtsController] =
+    useState<sdk.SpeechSynthesizer | null>(null);
 
   const [reload, setReload] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -116,7 +112,7 @@ const ChatPage = () => {
         return prevMsgs;
       });
 
-      textToSpeech(
+      const controller = textToSpeech(
         language === "hindi"
           ? message.answer.hindiText
           : message.answer.englishText,
@@ -125,6 +121,7 @@ const ChatPage = () => {
         () => setIsAudioPlaying(true),
         () => setIsAudioPlaying(false)
       );
+      setTtsController(controller);
     }
   };
 
@@ -154,6 +151,14 @@ const ChatPage = () => {
     setStarRating(rating);
   };
 
+  const handleStopReplay = () => {
+    if (ttsController) {
+      ttsController.close();
+    }
+    setIsAudioPlaying(false);
+    setTtsController(null);
+  };
+
   return (
     <main className="pt-6 pl-6 pr-6">
       <header className="flex">
@@ -165,7 +170,7 @@ const ChatPage = () => {
           className="ml-auto text-2xl flex items-center"
           onClick={handleEndConversation}
         >
-          End
+          {language === "hindi" ? "अंत" : "End"}
           <Image
             src={"../logout.svg"}
             height={26}
@@ -193,11 +198,6 @@ const ChatPage = () => {
                   </button>
                 ))}
               </div>
-              {/* <textarea
-                className="border rounded p-2 w-full mb-4"
-                rows={4}
-                placeholder="Share your feedback..."
-              ></textarea> */}
               <div className="flex justify-evenly">
                 <button
                   className="bg-red-500 text-white p-2 rounded mr-2"
@@ -289,13 +289,28 @@ const ChatPage = () => {
                       </div>
                     </div>
                     <div className="mt-1 ml-8 w-1/2 flex justify-end ">
-                      <button
-                        className="flex items-center"
-                        onClick={() => {
-                          const currentMesssage = messages[index];
+                      {isAudioPlaying ? (
+                        <button
+                          className="flex items-center"
+                          onClick={handleStopReplay}
+                        >
+                          <Image
+                            src="../replay.svg" // Add your stop icon here
+                            alt="Stop"
+                            height={16}
+                            width={16}
+                            className="mr-1"
+                          />
+                          Stop
+                        </button>
+                      ) : (
+                        <button
+                          className="flex items-center"
+                          onClick={() => {
+                            if (isAudioPlaying) return;
 
-                          isAudioPlaying ||
-                            textToSpeech(
+                            const currentMesssage = messages[index];
+                            const controller = textToSpeech(
                               language === "hindi"
                                 ? currentMesssage.answer.hindiText
                                 : currentMesssage.answer.englishText,
@@ -304,17 +319,19 @@ const ChatPage = () => {
                               () => setIsAudioPlaying(true),
                               () => setIsAudioPlaying(false)
                             );
-                        }}
-                      >
-                        <Image
-                          src="../replay.svg"
-                          alt="avatar"
-                          height={16}
-                          width={16}
-                          className="mr-1"
-                        />
-                        Replay
-                      </button>
+                            setTtsController(controller);
+                          }}
+                        >
+                          <Image
+                            src="../replay.svg"
+                            alt="avatar"
+                            height={16}
+                            width={16}
+                            className="mr-1"
+                          />
+                          Replay
+                        </button>
+                      )}
                     </div>
                   </>
                 )
@@ -322,26 +339,24 @@ const ChatPage = () => {
             </div>
           ))
         ) : (
-          <div className="text-black bg-red flex justify-center flex-col items-center h-full text-2xl">
-            Please click on mic{" "}
-            <Image
-              height={30}
-              width={30}
-              src="/microphone.svg"
-              alt="microphone.svg"
-              priority
-              onClick={() => {
-                toast.info(
-                  "😅 you fell in our trap. kindly click on the bigger microphone 😂",
-                  {
-                    autoClose: 5000,
-                    position: "top-right",
-                  }
-                );
-              }}
-              className="my-3"
-            />
-            to start
+          <div className="mt-2 ml-2">
+            <div className="flex items-end">
+              <div className="mr-1">
+                <Image
+                  src="/chatBot.png"
+                  alt="chatBot"
+                  height={36}
+                  width={36}
+                />
+              </div>
+              <div className="w-1/2 p-3 rounded-[30px_30px_30px_0px] bg-[#FFCBC366] text-gray-700">
+                <div className="text-[18px] not-italic font-semibold leading-[normal]">
+                  {language === "hindi"
+                    ? "साथी में आपका स्वागत है, मैं एक ध्वनि आधारित वित्तीय योजना सलाहकार हूं। कृपया कोई भी सवाल पूछें, और मैं आपको स्पष्ट उत्तर दूंगा! "
+                    : "Welcome to Saathi, your friendly financial scheme advisor through voice. Feel free to ask any questions, and I'll provide you with clear answers!"}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

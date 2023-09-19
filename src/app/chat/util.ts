@@ -70,6 +70,10 @@ export const textToSpeech = (
   //   synthesizer.close();
   // };
 
+  const stop = () => {
+    synthesizer.close();
+  };
+
   let estimatedDuration = text.length * 90;
 
   synthesizer.synthesisStarted = (_s, _e) => {
@@ -95,6 +99,7 @@ export const textToSpeech = (
       synthesizer.close();
     }
   );
+  return synthesizer;
 };
 
 export const feedBackApi = async (sessionId: string, rating: number) => {
