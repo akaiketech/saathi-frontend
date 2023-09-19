@@ -27,6 +27,15 @@ export const queryApi = async ({
   }
 };
 
+export const uint8ArrayToBase64 = (bytes: Uint8Array) => {
+  let binary = "";
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+};
+
 export const textToSpeech = (
   text: string,
   language: string,
@@ -42,64 +51,38 @@ export const textToSpeech = (
     serviceRegion ?? ""
   );
 
-  if (language === "hindi") {
-    speechConfig.speechRecognitionLanguage = "hi-IN";
-    if (voice === "female") {
-      speechConfig.speechSynthesisVoiceName = "hi-IN-SwaraNeural";
-    } else {
-      speechConfig.speechSynthesisVoiceName = "hi-IN-MadhurNeural";
-    }
-  } else {
-    speechConfig.speechRecognitionLanguage = "en-IN";
-    if (voice === "female") {
-      speechConfig.speechSynthesisVoiceName = "en-IN-NeerjaNeural";
-    } else {
-      speechConfig.speechSynthesisVoiceName = "en-IN-PrabhatNeural";
-    }
-  }
+  const voiceMap: Record<string, Record<string, string>> = {
+    hindi: {
+      female: "hi-IN-SwaraNeural",
+      male: "hi-IN-MadhurNeural",
+    },
+    english: {
+      female: "en-IN-NeerjaNeural",
+      male: "en-IN-PrabhatNeural",
+    },
+  };
 
-  const audioConfig = sdk.AudioConfig.fromDefaultSpeakerOutput();
+  speechConfig.speechRecognitionLanguage =
+    language === "hindi" ? "hi-IN" : "en-IN";
+  speechConfig.speechSynthesisVoiceName = voiceMap[language]?.[voice];
+
+  const player = new sdk.SpeakerAudioDestination();
+  const audioConfig = sdk.AudioConfig.fromSpeakerOutput(player);
   const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
 
-  // synthesizer.synthesisStarted = (_s, _e) => {
-  //   onStart();
-  // };
-
-  // synthesizer.synthesisCompleted = (_s, _e) => {
-  //   onEnd();
-  //   synthesizer.close();
-  // };
-
-  const stop = () => {
-    synthesizer.close();
+  player.onAudioStart = () => {
+    console.log("🚀 ~ file: util.ts:74 ~ onAudioStart:");
+    onStart();
   };
 
-  let estimatedDuration = text.length * 90;
-
-  synthesizer.synthesisStarted = (_s, _e) => {
-    onStart(); // Call your onStart function
-    setTimeout(() => {
-      onEnd(); // Call your onEnd function
-    }, estimatedDuration);
+  player.onAudioEnd = () => {
+    console.log("🚀 ~ file: util.ts:78 ~ onAudioEnd:");
+    onEnd();
   };
 
-  synthesizer.speakTextAsync(
-    text,
-    (result) => {
-      if (result) {
-        synthesizer.close();
-        return result.audioData;
-      }
-    },
-    (error) => {
-      toast.error(error, {
-        autoClose: 5000,
-        position: "top-right",
-      });
-      synthesizer.close();
-    }
-  );
-  return synthesizer;
+  synthesizer.speakTextAsync(text);
+
+  return player;
 };
 
 export const feedBackApi = async (sessionId: string, rating: number) => {

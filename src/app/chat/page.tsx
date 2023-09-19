@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Lottie from "react-lottie";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
-import { feedBackApi, queryApi, textToSpeech } from "./util";
+import { textToSpeech, feedBackApi, queryApi } from "./util";
 import { Message } from "../types";
 import Image from "next/image";
 import { useGlobalContext } from "../context";
@@ -23,9 +23,9 @@ const ChatPage = () => {
   const [starRating, setStarRating] = useState(0);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const [ttsController, setTtsController] =
-    useState<sdk.SpeechSynthesizer | null>(null);
-
-  const [reload, setReload] = useState(false);
+    useState<sdk.SpeakerAudioDestination | null>(null);
+  const [currentlyPlayingMessageIndex, setCurrentlyPlayingMessageIndex] =
+    useState<number | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
 
   useEffect(() => {
@@ -47,14 +47,6 @@ const ChatPage = () => {
       language === "hindi" ? "hi-IN" : "en-US";
     translationConfig.addTargetLanguage(language === "hindi" ? "en" : "hi");
 
-    // Set silence timeout in milliseconds
-    // translationConfig.setProperty(
-    //   sdk.PropertyId[
-    //     sdk.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs
-    //   ],
-    //   "5000"
-    // );
-
     const audioConfig = sdk.AudioConfig.fromDefaultMicrophoneInput();
 
     const recognizer = new sdk.TranslationRecognizer(
@@ -70,59 +62,90 @@ const ChatPage = () => {
       isLoading: false,
     };
 
+    const wavFragments: { [id: number]: ArrayBuffer } = {};
+    let wavFragmentCount = 0;
+
+    const con: sdk.Connection = sdk.Connection.fromRecognizer(recognizer);
+    con.messageSent = (args: sdk.ConnectionMessageEventArgs): void => {
+      if (
+        args.message.path === "audio" &&
+        args.message.isBinaryMessage &&
+        args.message.binaryMessage !== null
+      ) {
+        wavFragments[wavFragmentCount++] = args.message.binaryMessage;
+      }
+    };
+
     const recognizeOnceAsync = (): Promise<sdk.TranslationRecognitionResult> =>
       new Promise((resolve, reject) => {
-        recognizer.recognizeOnceAsync(
-          (result) => resolve(result as sdk.TranslationRecognitionResult),
-          reject
-        );
+        recognizer.recognizeOnceAsync(async (result) => {
+          resolve(result as sdk.TranslationRecognitionResult);
+          let byteCount: number = 0;
+          for (let i: number = 0; i < wavFragmentCount; i++) {
+            byteCount += wavFragments[i].byteLength;
+          }
+
+          const sentAudio: Uint8Array = new Uint8Array(byteCount);
+
+          byteCount = 0;
+          for (let i: number = 0; i < wavFragmentCount; i++) {
+            sentAudio.set(new Uint8Array(wavFragments[i]), byteCount);
+            byteCount += wavFragments[i].byteLength;
+          }
+
+          if (language === "hindi") {
+            message.question.hindiText = result.text;
+            message.question.englishText = result.translations.get("en");
+          } else {
+            message.question.englishText = result.text;
+            message.question.hindiText = result.translations.get("hi");
+          }
+          message.isLoading = true;
+
+          setMessages((prevMsgs) => [...prevMsgs, message]);
+          setIsRecording(false);
+
+          const data = await queryApi({
+            sessionId,
+            hindiQuery: message.question.hindiText,
+            englishQuery: message.question.englishText,
+          });
+          if (data) {
+            message.answer.hindiText = data.hindi_answer;
+            message.answer.englishText = data.english_answer;
+          }
+          message.isLoading = false;
+
+          setMessages((prevMsgs) => {
+            const index = prevMsgs.length - 1;
+            const newMsgs = [...prevMsgs];
+            newMsgs[index] = { ...message };
+            return newMsgs;
+          });
+
+          const textToSpeak =
+            language === "hindi"
+              ? message.answer.hindiText
+              : message.answer.englishText;
+
+          const controller = textToSpeech(
+            textToSpeak,
+            language,
+            voice,
+            () => {
+              setIsAudioPlaying(true);
+            },
+            () => {
+              setIsAudioPlaying(false);
+            }
+          );
+
+          setCurrentlyPlayingMessageIndex(messages.length);
+          setTtsController(controller);
+        }, reject);
       });
 
-    const result = await recognizeOnceAsync();
-
-    if (result.reason === sdk.ResultReason.TranslatedSpeech) {
-      if (language === "hindi") {
-        message.question.hindiText = result.text;
-        message.question.englishText = result.translations.get("en");
-      } else {
-        message.question.englishText = result.text;
-        message.question.hindiText = result.translations.get("hi");
-      }
-      message.isLoading = true;
-
-      setMessages((prevMsgs) => [...prevMsgs, message]);
-      setIsRecording(false);
-
-      const data = await queryApi({
-        sessionId,
-        hindiQuery: message.question.hindiText,
-        englishQuery: message.question.englishText,
-      });
-      if (data) {
-        message.answer.hindiText = data.hindi_answer;
-        message.answer.englishText = data.english_answer;
-      }
-      message.isLoading = false;
-
-      setReload(!reload);
-      setMessages((prevMsgs) => {
-        const index = prevMsgs.length;
-        let currentMsg = prevMsgs[index - 1];
-        currentMsg = message;
-        return prevMsgs;
-      });
-
-      const controller = textToSpeech(
-        language === "hindi"
-          ? message.answer.hindiText
-          : message.answer.englishText,
-        language,
-        voice,
-        () => setIsAudioPlaying(true),
-        () => setIsAudioPlaying(false)
-      );
-      setTtsController(controller);
-    }
+    recognizeOnceAsync();
   };
 
   const defaultOptions = {
@@ -145,6 +168,7 @@ const ChatPage = () => {
 
   const handleEndConversation = () => {
     setIsFeedbackDialogOpen(true);
+    handleStopReplay();
   };
 
   const handleRatingClick = (rating: number) => {
@@ -152,11 +176,40 @@ const ChatPage = () => {
   };
 
   const handleStopReplay = () => {
-    if (ttsController) {
-      ttsController.close();
-    }
+    ttsController?.pause();
+    setCurrentlyPlayingMessageIndex(null);
     setIsAudioPlaying(false);
     setTtsController(null);
+  };
+
+  const handleReplayClick = (index: number) => {
+    if (currentlyPlayingMessageIndex !== null || isAudioPlaying) {
+      handleStopReplay();
+    }
+
+    if (messages[index]) {
+      const currentMessage = messages[index];
+
+      const textToSpeak =
+        language === "hindi"
+          ? currentMessage.answer.hindiText
+          : currentMessage.answer.englishText;
+
+      const controller = textToSpeech(
+        textToSpeak,
+        language,
+        voice,
+        () => {
+          setIsAudioPlaying(true);
+        },
+        () => {
+          setIsAudioPlaying(false);
+        }
+      );
+
+      setCurrentlyPlayingMessageIndex(index);
+      setTtsController(controller);
+    }
   };
 
   return (
@@ -289,7 +342,7 @@ const ChatPage = () => {
                       </div>
                     </div>
                     <div className="mt-1 ml-8 w-1/2 flex justify-end ">
-                      {isAudioPlaying ? (
+                      {currentlyPlayingMessageIndex === index ? (
                         <button
                           className="flex items-center"
                           onClick={handleStopReplay}
@@ -306,21 +359,7 @@ const ChatPage = () => {
                       ) : (
                         <button
                           className="flex items-center"
-                          onClick={() => {
-                            if (isAudioPlaying) return;
-
-                            const currentMesssage = messages[index];
-                            const controller = textToSpeech(
-                              language === "hindi"
-                                ? currentMesssage.answer.hindiText
-                                : currentMesssage.answer.englishText,
-                              language,
-                              voice,
-                              () => setIsAudioPlaying(true),
-                              () => setIsAudioPlaying(false)
-                            );
-                            setTtsController(controller);
-                          }}
+                          onClick={() => handleReplayClick(index)}
                         >
                           <Image
                             src="../replay.svg"
