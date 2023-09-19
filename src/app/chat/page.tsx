@@ -109,6 +109,7 @@ const ChatPage = () => {
             sessionId,
             hindiQuery: message.question.hindiText,
             englishQuery: message.question.englishText,
+            audio: sentAudio,
           });
           if (data) {
             message.answer.hindiText = data.hindi_answer;
@@ -136,7 +137,9 @@ const ChatPage = () => {
               setIsAudioPlaying(true);
             },
             () => {
+              if (isAudioPlaying) return;
               setIsAudioPlaying(false);
+              setCurrentlyPlayingMessageIndex(null);
             }
           );
 
@@ -176,9 +179,11 @@ const ChatPage = () => {
   };
 
   const handleStopReplay = () => {
-    ttsController?.pause();
+    ttsController?.mute();
+    ttsController?.close(() => {
+      setIsAudioPlaying(false);
+    });
     setCurrentlyPlayingMessageIndex(null);
-    setIsAudioPlaying(false);
     setTtsController(null);
   };
 
@@ -203,7 +208,9 @@ const ChatPage = () => {
           setIsAudioPlaying(true);
         },
         () => {
+          if (isAudioPlaying) return;
           setIsAudioPlaying(false);
+          setCurrentlyPlayingMessageIndex(null);
         }
       );
 

@@ -1,4 +1,5 @@
 import { toast } from "react-toastify";
+import { getDeviceUUID } from "../util";
 
 export const startSessionApi = async (
   language: string,
@@ -6,7 +7,7 @@ export const startSessionApi = async (
 ) => {
   const res = await fetch("/api/v1/start_session", {
     method: "POST",
-    body: JSON.stringify({ language }),
+    body: JSON.stringify({ language, deviceId: getDeviceUUID() }),
   });
 
   const data = await res.json();

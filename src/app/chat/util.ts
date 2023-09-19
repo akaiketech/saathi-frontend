@@ -5,6 +5,7 @@ export const queryApi = async ({
   hindiQuery,
   englishQuery,
   sessionId,
+  audio,
 }: any) => {
   const res = await fetch("/api/v1/user_query", {
     method: "POST",
@@ -12,6 +13,7 @@ export const queryApi = async ({
       hindiQuery,
       englishQuery,
       sessionId,
+      audio: uint8ArrayToBase64(audio),
     }),
   });
 
@@ -70,16 +72,14 @@ export const textToSpeech = (
   const audioConfig = sdk.AudioConfig.fromSpeakerOutput(player);
   const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
 
-  player.onAudioStart = () => {
-    console.log("🚀 ~ file: util.ts:74 ~ onAudioStart:");
+  let estimatedDuration = text.length * 90;
+
+  synthesizer.synthesisStarted = (_s, _e) => {
     onStart();
+    setTimeout(() => {
+      onEnd();
+    }, estimatedDuration);
   };
-
-  player.onAudioEnd = () => {
-    console.log("🚀 ~ file: util.ts:78 ~ onAudioEnd:");
-    onEnd();
-  };
-
   synthesizer.speakTextAsync(text);
 
   return player;

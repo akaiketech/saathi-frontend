@@ -3,20 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
-    console.log("🚀 ~ file: route.ts:6 ~ POST ~ body:", body);
-    const { hindiQuery, englishQuery, sessionId, audio } = body;
-
-    const reqBody = {
-      hindi_query: hindiQuery,
-      english_query: englishQuery,
-      session_id: sessionId,
-      user_audio: audio,
-    };
+    console.log("🚀 ~ file: route.ts:14 ~ POST ~ body:", body);
+    const { conversationId, question, answer } = body;
 
     const response = await fetch(
-      `${process.env.BACKEND_BASE_URL}/api/v1/user_query/`,
+      `${process.env.BACKEND_BASE_URL}/api/v1/start_session/`,
       {
-        body: JSON.stringify(reqBody),
+        body: JSON.stringify({
+          conversation_id: conversationId,
+          user_query: question,
+          query_response: answer,
+        }),
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -28,7 +25,7 @@ export const POST = async (req: NextRequest) => {
     const responseData = await response.json();
 
     if (!response.ok) {
-      const errorText = `Failed to fetch the result: ${response.status} ${response.statusText}`;
+      const errorText = `Failed to start session: ${response.status} ${response.statusText}`;
       return NextResponse.json(
         { error: errorText },
         { status: response.status }
@@ -48,7 +45,7 @@ export const POST = async (req: NextRequest) => {
         );
       }
     } else {
-      return NextResponse.json({ ...responseData, sessionId });
+      return NextResponse.json({ ...responseData });
     }
   } catch (error) {
     console.error("Error:", error);

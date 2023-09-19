@@ -10,7 +10,9 @@ const generateSessionId = () => {
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { language } = await req.json();
+    const body = await req.json();
+    console.log("🚀 ~ file: route.ts:14 ~ POST ~ body:", body);
+    const { language, deviceId } = body;
 
     const sessionId = generateSessionId();
 
@@ -20,6 +22,7 @@ export const POST = async (req: NextRequest) => {
         body: JSON.stringify({
           user_language: language,
           session_id: sessionId,
+          // device_id: deviceId,
         }),
         headers: {
           Accept: "application/json",
