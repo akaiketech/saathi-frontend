@@ -70,10 +70,57 @@ const ChatPage = () => {
       isLoading: false,
     };
 
+    const wavFragments: { [id: number]: ArrayBuffer; } = {};
+    let wavFragmentCount = 0;
+
+    const con: sdk.Connection = sdk.Connection.fromRecognizer(recognizer);
+    con.messageSent = (args: sdk.ConnectionMessageEventArgs): void => {
+      // Only record outbound audio mesages that have data in them.
+      if (args.message.path === "audio" && args.message.isBinaryMessage && args.message.binaryMessage !== null) {
+        wavFragments[wavFragmentCount++] = args.message.binaryMessage;
+      }
+    };
     const recognizeOnceAsync = (): Promise<sdk.TranslationRecognitionResult> =>
       new Promise((resolve, reject) => {
         recognizer.recognizeOnceAsync(
-          (result) => resolve(result as sdk.TranslationRecognitionResult),
+          (result) => {
+            resolve(result as sdk.TranslationRecognitionResult);
+            // Find the length of the audio sent.
+            let byteCount: number = 0;
+            for (let i: number = 0; i < wavFragmentCount; i++) {
+              byteCount += wavFragments[i].byteLength;
+            }
+
+            // Output array.
+            const sentAudio: Uint8Array = new Uint8Array(byteCount);
+
+            byteCount = 0;
+            for (let i: number = 0; i < wavFragmentCount; i++) {
+              sentAudio.set(new Uint8Array(wavFragments[i]), byteCount);
+              byteCount += wavFragments[i].byteLength;
+            }
+
+            // Set the file size in the wave header:
+            const view = new DataView(sentAudio.buffer);
+            view.setUint32(4, byteCount, true);
+            view.setUint32(40, byteCount, true);
+
+
+            const postAudio = () => {
+              // Post audio as form data upload
+              const formData = new FormData();
+              formData.append("csrf", "zgoJl1yFgA");
+              formData.append("files", new Blob([sentAudio], { type: "audio/wav" }), "file.wav");
+
+
+              fetch("http://localhost:8081/?csrf=zgoJl1yFgA", {
+                method: "POST",
+                body: formData,
+              }).then(console.log)
+            }
+            postAudio();
+
+          },
           reject
         );
       });
@@ -189,9 +236,8 @@ const ChatPage = () => {
                 {[1, 2, 3, 4, 5].map((rating) => (
                   <button
                     key={rating}
-                    className={`p-2 text-4xl  ${
-                      starRating >= rating ? "text-yellow-500" : "text-gray-300"
-                    }`}
+                    className={`p-2 text-4xl  ${starRating >= rating ? "text-yellow-500" : "text-gray-300"
+                      }`}
                     onClick={() => handleRatingClick(rating)}
                   >
                     ★
