@@ -4,15 +4,15 @@ export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
     console.log("🚀 ~ file: route.ts:14 ~ POST ~ body:", body);
-    const { conversationId, question, answer } = body;
+    const { conversationId, sessionId, vote } = body;
 
     const response = await fetch(
       `${process.env.BACKEND_BASE_URL}/api/v1/start_session/`,
       {
         body: JSON.stringify({
           conversation_id: conversationId,
-          user_query: question,
-          query_response: answer,
+          session_is: sessionId,
+          vote: vote,
         }),
         headers: {
           Accept: "application/json",

@@ -5,8 +5,9 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import Lottie from "react-lottie";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
+import { v4 as uuidv4 } from "uuid";
 
-import { textToSpeech, feedBackApi, queryApi } from "./util";
+import { textToSpeech, feedBackApi, queryApi, votingApi } from "./util";
 import { Message } from "../types";
 import Image from "next/image";
 import { useGlobalContext } from "../context";
@@ -19,6 +20,7 @@ const ChatPage = () => {
   const { language, sessionId, voice } = useGlobalContext();
   const [isRecording, setIsRecording] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  console.log("🚀 ~ file: page.tsx:23 ~ ChatPage ~ messages:", messages);
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   const [starRating, setStarRating] = useState(0);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
@@ -27,6 +29,7 @@ const ChatPage = () => {
   const [currentlyPlayingMessageIndex, setCurrentlyPlayingMessageIndex] =
     useState<number | null>(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -57,6 +60,7 @@ const ChatPage = () => {
     console.log("Say something...");
 
     const message: Message = {
+      id: uuidv4(),
       question: { englishText: "", hindiText: "", audio: "" },
       answer: { englishText: "", hindiText: "", audio: "" },
       isLoading: false,
@@ -144,7 +148,8 @@ const ChatPage = () => {
           );
 
           setCurrentlyPlayingMessageIndex(messages.length);
-          setTtsController(controller);
+          setTtsController(controller.player);
+          setTimerId(controller.timeoutId);
         }, reject);
       });
 
@@ -183,6 +188,11 @@ const ChatPage = () => {
     ttsController?.close(() => {
       setIsAudioPlaying(false);
     });
+    if (timerId !== null) {
+      clearTimeout(timerId);
+      setTimerId(null);
+    }
+
     setCurrentlyPlayingMessageIndex(null);
     setTtsController(null);
   };
@@ -215,8 +225,31 @@ const ChatPage = () => {
       );
 
       setCurrentlyPlayingMessageIndex(index);
-      setTtsController(controller);
+      setTtsController(controller.player);
+      setTimerId(controller.timeoutId);
     }
+  };
+
+  const handleUpVote = () => {
+    setMessages((prevMsgs) => {
+      const index = prevMsgs.length - 1;
+      const newMsgs = [...prevMsgs];
+      const currentMsg = newMsgs[index];
+      currentMsg.answer.vote = 1;
+      votingApi(sessionId, currentMsg.id, 1);
+      return newMsgs;
+    });
+  };
+
+  const handleDownVote = () => {
+    setMessages((prevMsgs) => {
+      const index = prevMsgs.length - 1;
+      const newMsgs = [...prevMsgs];
+      const currentMsg = newMsgs[index];
+      currentMsg.answer.vote = 1;
+      votingApi(sessionId, currentMsg.id, 0);
+      return newMsgs;
+    });
   };
 
   return (
@@ -349,6 +382,12 @@ const ChatPage = () => {
                       </div>
                     </div>
                     <div className="mt-1 ml-8 w-1/2 flex justify-end ">
+                      {!messageObj.answer.vote ? (
+                        <div className="flex w-full justify-evenly text-4xl">
+                          <div onClick={handleUpVote}>👍</div>
+                          <div onClick={handleDownVote}>👎</div>
+                        </div>
+                      ) : null}
                       {currentlyPlayingMessageIndex === index ? (
                         <button
                           className="flex items-center"

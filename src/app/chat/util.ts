@@ -38,6 +38,8 @@ export const uint8ArrayToBase64 = (bytes: Uint8Array) => {
   return window.btoa(binary);
 };
 
+let timeoutId: NodeJS.Timeout | null = null;
+
 export const textToSpeech = (
   text: string,
   language: string,
@@ -76,13 +78,13 @@ export const textToSpeech = (
 
   synthesizer.synthesisStarted = (_s, _e) => {
     onStart();
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       onEnd();
     }, estimatedDuration);
   };
   synthesizer.speakTextAsync(text);
 
-  return player;
+  return { player, timeoutId };
 };
 
 export const feedBackApi = async (sessionId: string, rating: number) => {
@@ -91,6 +93,32 @@ export const feedBackApi = async (sessionId: string, rating: number) => {
     body: JSON.stringify({
       rating,
       sessionId,
+    }),
+  });
+
+  const data = await res.json();
+
+  if (data.error) {
+    toast.error(data.error, {
+      autoClose: 5000,
+      position: "top-right",
+    });
+  } else {
+    return data;
+  }
+};
+
+export const votingApi = async (
+  sessionId: string,
+  conversationId: string,
+  vote: 0 | 1
+) => {
+  const res = await fetch("/api/v1/session_feedback", {
+    method: "POST",
+    body: JSON.stringify({
+      conversationId,
+      sessionId,
+      vote,
     }),
   });
 
