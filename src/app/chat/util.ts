@@ -113,7 +113,7 @@ export const votingApi = async (
   conversationId: string,
   vote: 0 | 1
 ) => {
-  const res = await fetch("/api/v1/session_feedback", {
+  const res = await fetch("/api/v1/report", {
     method: "POST",
     body: JSON.stringify({
       conversationId,

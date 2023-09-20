@@ -11,7 +11,7 @@ export const POST = async (req: NextRequest) => {
       {
         body: JSON.stringify({
           conversation_id: conversationId,
-          session_is: sessionId,
+          session_id: sessionId,
           vote: vote,
         }),
         headers: {
