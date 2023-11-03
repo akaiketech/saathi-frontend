@@ -7,7 +7,7 @@ import { useGlobalContext } from "@/app/context";
 
 import { getQuestions } from "../util";
 
-import loadingData from "../../chat/loading.json";
+import loadingData from "../../../../public/loading.json";
 
 import styles from "./styles.module.css";
 
