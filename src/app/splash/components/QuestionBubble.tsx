@@ -10,6 +10,7 @@ import { getQuestions } from "../util";
 import loadingData from "../../../../public/loading.json";
 
 import styles from "./styles.module.css";
+import { useRouter } from "next/navigation";
 
 const QuestionBubble: FC = () => {
   const { language } = useGlobalContext();
@@ -51,6 +52,19 @@ const QuestionBubble: FC = () => {
       preserveAspectRatio: "xMidYMid slice",
     },
   };
+  const router = useRouter();
+
+  useEffect(() => {
+    const resetMouseActivity = () => {
+      router.push("/");
+    };
+
+    window.addEventListener("mousemove", resetMouseActivity);
+
+    return () => {
+      window.removeEventListener("mousemove", resetMouseActivity);
+    };
+  }, []);
 
   return (
     <div className={styles.fullscreenText}>

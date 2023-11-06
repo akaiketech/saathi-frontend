@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import Image from "next/image";
 
 import { useGlobalContext } from "@/app/context";
@@ -8,6 +8,7 @@ import { useGlobalContext } from "@/app/context";
 import { FeedbackDialog } from "@/app/chat/components/FeedbackDialog";
 
 import { useChatContext } from "@/app/chat/contexts/ChatContext";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {}
 
@@ -22,6 +23,29 @@ const Header: FC<HeaderProps> = () => {
     setIsFeedbackDialogOpen(false);
     // handleEndConversation();
   };
+
+  const router = useRouter();
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    const setMouseInactive = () => {
+      router.push("/splash");
+    };
+
+    const resetMouseActivity = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(setMouseInactive, 5000);
+    };
+
+    window.addEventListener("mousemove", resetMouseActivity);
+    resetMouseActivity();
+
+    return () => {
+      window.removeEventListener("mousemove", resetMouseActivity);
+      clearTimeout(timeout);
+    };
+  }, []);
 
   return (
     <header className="flex">
