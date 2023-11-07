@@ -15,14 +15,11 @@ export const uint8ArrayToBase64 = (bytes: Uint8Array) => {
   return window.btoa(binary);
 };
 
-let timeoutId: NodeJS.Timeout | null = null;
-
 export const textToSpeech = (
   text: string,
   language: string,
   voice: string,
-  onStart: any,
-  onEnd: any
+  onStart: any
 ) => {
   const speechKey = process.env.NEXT_PUBLIC_SPEECH_KEY;
   const serviceRegion = process.env.NEXT_PUBLIC_SPEECH_REGION;
@@ -51,17 +48,13 @@ export const textToSpeech = (
   const audioConfig = sdk.AudioConfig.fromSpeakerOutput(player);
   const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
 
-  let estimatedDuration = text.length * 90;
-
   synthesizer.synthesisStarted = (_s, _e) => {
     onStart();
-    timeoutId = setTimeout(() => {
-      onEnd();
-    }, estimatedDuration);
   };
+
   synthesizer.speakTextAsync(text);
 
-  return { player, timeoutId };
+  return { player };
 };
 
 export const translationOnceFromMic = async (
@@ -73,7 +66,9 @@ export const translationOnceFromMic = async (
   setIsAudioPlaying: Dispatch<SetStateAction<boolean>>,
   setIsRecording: Dispatch<SetStateAction<boolean>>,
   setMessages: Dispatch<SetStateAction<Message[]>>,
-  setCurrentPlayingIndex: Dispatch<SetStateAction<number | undefined>>
+  setCurrentPlayingIndex: Dispatch<SetStateAction<number | undefined>>,
+  setIsLoading: Dispatch<SetStateAction<boolean>>,
+  setTtsController: Dispatch<SetStateAction<sdk.SpeakerAudioDestination | null>>
 ) => {
   const speechKey = process.env.NEXT_PUBLIC_SPEECH_KEY;
   const serviceRegion = process.env.NEXT_PUBLIC_SPEECH_REGION;
@@ -107,6 +102,7 @@ export const translationOnceFromMic = async (
   let wavFragmentCount = 0;
 
   const con: sdk.Connection = sdk.Connection.fromRecognizer(recognizer);
+
   con.messageSent = (args: sdk.ConnectionMessageEventArgs): void => {
     if (
       args.message.path === "audio" &&
@@ -151,6 +147,7 @@ export const translationOnceFromMic = async (
           hindiQuery: message.question.hindiText,
           englishQuery: message.question.englishText,
           audio: sentAudio,
+          setIsLoading,
         });
         if (data) {
           message.answer.hindiText = data.hindi_answer;
@@ -170,23 +167,12 @@ export const translationOnceFromMic = async (
             ? message.answer.hindiText
             : message.answer.englishText;
 
-        const controller = textToSpeech(
-          textToSpeak,
-          language,
-          voice,
-          () => {
-            setIsAudioPlaying(true);
-          },
-          () => {
-            if (isAudioPlaying) return;
-            setIsAudioPlaying(false);
-            setCurrentPlayingIndex(undefined);
-          }
-        );
+        const controller = textToSpeech(textToSpeak, language, voice, () => {
+          setIsAudioPlaying(true);
+        });
 
         setCurrentPlayingIndex(messages.length);
-        // setTtsController(controller.player);
-        // setTimerId(controller.timeoutId);
+        setTtsController(controller.player);
       }, reject);
     });
 

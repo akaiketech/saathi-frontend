@@ -1,122 +1,62 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  SpeechTranslationConfig,
-  AudioConfig,
-  TranslationRecognizer,
-  ResultReason,
-} from "microsoft-cognitiveservices-speech-sdk";
-import { queryApi } from "./util";
+import { useState } from "react";
+import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
-function App() {
-  const [queryInHindi, setQueryInHindi] = useState("");
-  const [queryInEnglish, setQueryInEnglish] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [recognizer, setRecognizer] = useState<TranslationRecognizer>();
-  const [silenceTimer, setSilenceTimer] = useState<NodeJS.Timeout>();
-  const [shouldQueryApi, setShouldQueryApi] = useState(false);
+import { textToSpeech } from "./util";
 
-  const getQueryResult = async () => {
-    console.log(
-      "🚀 ~ file: page.tsx:18 ~ getQueryResult ~ queryInHindi:",
-      queryInHindi
-    );
-    console.log(
-      "🚀 ~ file: page.tsx:18 ~ getQueryResult ~ queryInEnglish:",
-      queryInEnglish
-    );
-    const result = await queryApi(queryInHindi, queryInEnglish, "123456789");
-    console.log("API Result:", result);
+type AudioStateType = {
+  isPlaying: boolean;
+  player: sdk.SpeakerAudioDestination | null;
+};
+
+const Test = () => {
+  const [audioState, setAudioState] = useState<AudioStateType>({
+    isPlaying: false,
+    player: null,
+  });
+
+  const textsToTest = [
+    "The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "A quick brown fox jumps over the lazy dog.",
+    "Welcome to our website. We hope you enjoy your visit.",
+    "Error 404: The page you are looking for does not exist.",
+    "Your transaction has been completed successfully.",
+  ];
+
+  const handleStart = (player: sdk.SpeakerAudioDestination) => {
+    setAudioState({ isPlaying: true, player });
   };
 
-  const startRecognition = () => {
-    setQueryInHindi("");
-    setQueryInEnglish("");
-
-    const speechKey = process.env.NEXT_PUBLIC_SPEECH_KEY;
-    const serviceRegion = process.env.NEXT_PUBLIC_SPEECH_REGION;
-
-    const translationConfig = SpeechTranslationConfig.fromSubscription(
-      speechKey || "",
-      serviceRegion || ""
-    );
-
-    translationConfig.speechRecognitionLanguage = "hi-IN";
-    translationConfig.addTargetLanguage("en");
-
-    const audioConfig = AudioConfig.fromDefaultMicrophoneInput();
-    const recognizer = new TranslationRecognizer(
-      translationConfig,
-      audioConfig
-    );
-
-    let isSpeaking = false;
-
-    setShouldQueryApi(true);
-
-    recognizer.recognizing = (_, e) => {
-      const hindiText = e.result.text;
-      const englishText = e.result.translations.get("en");
-
-      setQueryInHindi((prevText) => prevText + " " + hindiText.trim());
-      setQueryInEnglish((prevText) => prevText + " " + englishText.trim());
-
-      // Reset the silence timer
-      if (!isSpeaking) {
-        isSpeaking = true;
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-        }
-      }
-
-      isSpeaking = false;
-
-      // Set a timer to stop recognition if there's silence for more than 5 seconds
-      if (silenceTimer) {
-        clearTimeout(silenceTimer);
-      }
-      setSilenceTimer(
-        setTimeout(() => {
-          stopRecognition();
-        }, 5000)
-      );
-    };
-
-    recognizer.recognized = (_, e) => {
-      if (e.result.reason === ResultReason.NoMatch) {
-      }
-    };
-
-    recognizer.canceled = () => {
-      setIsRecording(false);
-      console.log("Recognition Canceled");
-    };
-
-    setRecognizer(recognizer);
-    recognizer.startContinuousRecognitionAsync();
-    setIsRecording(true);
+  const handleEnd = () => {
+    setAudioState({ isPlaying: false, player: null });
   };
-  const stopRecognition = () => {
-    if (recognizer) {
-      recognizer.stopContinuousRecognitionAsync();
-      setIsRecording(false);
-      if (shouldQueryApi) {
-        getQueryResult();
-      }
-      setShouldQueryApi(false); // Reset the flag
-    }
+
+  const handleClick = (text: string) => {
+    textToSpeech(text, "english", "female", handleStart, handleEnd);
+  };
+
+  const handleStopClick = () => {
+    audioState.player?.pause();
+    audioState.player?.close();
+    handleEnd(); // Update the state to reflect that audio has stopped
   };
 
   return (
-    <div className="App">
-      <button onClick={isRecording ? stopRecognition : startRecognition}>
-        {isRecording ? "Stop Recognition" : "Start Recognition"}
-      </button>
-      <div>{isRecording ? "Recording..." : "Not Recording"}</div>
-      <div>Recognized Text: {queryInHindi}</div>
+    <div>
+      {textsToTest.map((text, index) => (
+        <button key={index} onClick={() => handleClick(text)}>
+          Test {index + 1}
+        </button>
+      ))}
+      {audioState.isPlaying && (
+        <>
+          <div>Playing</div>
+          <button onClick={handleStopClick}>Stop</button>
+        </>
+      )}
     </div>
   );
-}
+};
 
-export default App;
+export default Test;

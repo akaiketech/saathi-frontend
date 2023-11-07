@@ -10,8 +10,6 @@ import { votingApi } from "@/app/chat/api";
 
 import { ReactLottie } from "@/app/chat/components/ReactLottie";
 
-import { textToSpeech } from "@/app/chat/util";
-
 import loadingData from "../../../../public/loading.json";
 
 interface MessagesListProps {}
@@ -28,16 +26,12 @@ const loadingOptions = {
 const MessagesList: FC<MessagesListProps> = ({}) => {
   const { language, voice, sessionId } = useGlobalContext();
   const {
-    ttsController,
-    timerId,
+    messages,
     currentPlayingIndex,
-    setCurrentPlayingIndex,
-    setTimerId,
-    setTtsController,
+    setMessages,
+    replayAudio,
+    stopPlayingAudio,
   } = useChatContext();
-
-  const { isAudioPlaying, setIsAudioPlaying, messages, setMessages } =
-    useChatContext();
 
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
@@ -47,52 +41,10 @@ const MessagesList: FC<MessagesListProps> = ({}) => {
     }
   }, [JSON.stringify(messages)]);
 
-  const handleStopReplay = () => {
-    ttsController?.mute();
-    ttsController?.close(() => {
-      setIsAudioPlaying(false);
-    });
-    if (timerId !== null) {
-      clearTimeout(timerId);
-      setTimerId(null);
-    }
+  const handleStopReplay = () => stopPlayingAudio();
 
-    setCurrentPlayingIndex(undefined);
-    setTtsController(null);
-  };
-
-  const handleReplayClick = (index: number) => {
-    if (currentPlayingIndex !== null || isAudioPlaying) {
-      handleStopReplay();
-    }
-
-    if (messages[index]) {
-      const currentMessage = messages[index];
-
-      const textToSpeak =
-        language === "hindi"
-          ? currentMessage.answer.hindiText
-          : currentMessage.answer.englishText;
-
-      const controller = textToSpeech(
-        textToSpeak,
-        language,
-        voice,
-        () => {
-          setIsAudioPlaying(true);
-        },
-        () => {
-          if (isAudioPlaying) return;
-          setIsAudioPlaying(false);
-          setCurrentPlayingIndex(undefined);
-        }
-      );
-
-      setCurrentPlayingIndex(index);
-      setTtsController(controller.player);
-      setTimerId(controller.timeoutId);
-    }
-  };
+  const handleReplayClick = (index: number) =>
+    replayAudio(index, language, voice);
 
   const handleUpVote = () => {
     setMessages((prevMsgs) => {

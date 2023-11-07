@@ -1,32 +1,64 @@
+import { Dispatch, SetStateAction } from "react";
 import { toast } from "react-toastify";
 
 import { uint8ArrayToBase64 } from "@/app/chat/util";
+
+interface QueryApiArgs {
+  hindiQuery: string;
+  englishQuery: string;
+  sessionId: string;
+  audio: Uint8Array;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
+}
 
 export const queryApi = async ({
   hindiQuery,
   englishQuery,
   sessionId,
   audio,
-}: any) => {
-  const res = await fetch("/api/v1/user_query", {
-    method: "POST",
-    body: JSON.stringify({
-      hindiQuery,
-      englishQuery,
-      sessionId,
-      audio: uint8ArrayToBase64(audio),
-    }),
-  });
+  setIsLoading,
+}: QueryApiArgs): Promise<any> => {
+  try {
+    setIsLoading(true);
+    const res = await fetch("/api/v1/user_query", {
+      method: "POST",
+      body: JSON.stringify({
+        hindiQuery,
+        englishQuery,
+        sessionId,
+        audio: uint8ArrayToBase64(audio),
+      }),
+    });
 
-  const data = await res.json();
+    if (!res.ok) {
+      toast.error(`Network response was not ok: ${res.statusText}`, {
+        autoClose: 5000,
+        position: "top-right",
+      });
 
-  if (data.error) {
-    toast.error(data.error, {
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.error) {
+      toast.error(data.error, {
+        autoClose: 5000,
+        position: "top-right",
+      });
+
+      return;
+    }
+
+    return data;
+  } catch (error) {
+    const err = error as Error;
+    toast.error(err.message, {
       autoClose: 5000,
       position: "top-right",
     });
-  } else {
-    return data;
+  } finally {
+    setIsLoading(false);
   }
 };
 

@@ -2,6 +2,7 @@
 
 import { FC } from "react";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 import { useGlobalContext } from "@/app/context";
 import { useChatContext } from "@/app/chat/contexts/ChatContext";
@@ -29,10 +30,13 @@ const Footer: FC<FooterProps> = () => {
     isRecording,
     isAudioPlaying,
     messages,
+    isLoading,
     setMessages,
     setIsRecording,
     setIsAudioPlaying,
     setCurrentPlayingIndex,
+    setIsLoading,
+    setTtsController,
   } = useChatContext();
 
   return (
@@ -44,9 +48,9 @@ const Footer: FC<FooterProps> = () => {
           </div>
         ) : (
           <div
-            className={`${isAudioPlaying ? "opacity-50" : ""}`}
+            className={`${isAudioPlaying || isLoading ? "opacity-50" : ""}`}
             onClick={() => {
-              if (isAudioPlaying) return;
+              if (isAudioPlaying || isLoading) return;
               setIsRecording(true);
               translationOnceFromMic(
                 language,
@@ -57,8 +61,16 @@ const Footer: FC<FooterProps> = () => {
                 setIsAudioPlaying,
                 setIsRecording,
                 setMessages,
-                setCurrentPlayingIndex
-              ).catch((err) => console.error(err));
+                setCurrentPlayingIndex,
+                setIsLoading,
+                setTtsController
+              ).catch((err) => {
+                console.error(err);
+                toast.error(err.message, {
+                  autoClose: 5000,
+                  position: "top-right",
+                });
+              });
             }}
           >
             <Image

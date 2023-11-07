@@ -13,6 +13,8 @@ import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
 import { Message } from "@/app/types";
 
+import { textToSpeech } from "@/app/chat/util";
+
 interface ChatContextType {
   isLoading: boolean;
   isRecording: boolean;
@@ -20,7 +22,8 @@ interface ChatContextType {
   messages: Message[];
   currentPlayingIndex: number | undefined;
   ttsController: sdk.SpeakerAudioDestination | null;
-  timerId: NodeJS.Timeout | null;
+  replayAudio: (index: number, language: string, voice: string) => void;
+  stopPlayingAudio: () => void;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   setIsAudioPlaying: Dispatch<SetStateAction<boolean>>;
   setIsRecording: Dispatch<SetStateAction<boolean>>;
@@ -29,7 +32,6 @@ interface ChatContextType {
   setTtsController: Dispatch<
     SetStateAction<sdk.SpeakerAudioDestination | null>
   >;
-  setTimerId: Dispatch<SetStateAction<NodeJS.Timeout | null>>;
 }
 
 const ChatContext = createContext<ChatContextType>({} as ChatContextType);
@@ -46,7 +48,38 @@ export const ChatProvider: FC<Props> = ({ children }) => {
   const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number>();
   const [ttsController, setTtsController] =
     useState<sdk.SpeakerAudioDestination | null>(null);
-  const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
+
+  const replayAudio = (index: number, language: string, voice: string) => {
+    if (currentPlayingIndex !== null || isAudioPlaying) {
+      stopPlayingAudio();
+    }
+
+    if (messages[index]) {
+      const currentMessage = messages[index];
+
+      const textToSpeak =
+        language === "hindi"
+          ? currentMessage.answer.hindiText
+          : currentMessage.answer.englishText;
+
+      const controller = textToSpeech(textToSpeak, language, voice, () => {
+        setIsAudioPlaying(true);
+      });
+
+      setCurrentPlayingIndex(index);
+      setTtsController(controller.player);
+    }
+  };
+
+  const stopPlayingAudio = () => {
+    ttsController?.pause();
+    ttsController?.close(() => {
+      setIsAudioPlaying(false);
+    });
+
+    setCurrentPlayingIndex(undefined);
+    setTtsController(null);
+  };
 
   return (
     <ChatContext.Provider
@@ -57,14 +90,14 @@ export const ChatProvider: FC<Props> = ({ children }) => {
         messages,
         currentPlayingIndex,
         ttsController,
-        timerId,
+        replayAudio,
+        stopPlayingAudio,
         setIsLoading,
         setIsAudioPlaying,
         setIsRecording,
         setMessages,
         setCurrentPlayingIndex,
         setTtsController,
-        setTimerId,
       }}
     >
       {children}
