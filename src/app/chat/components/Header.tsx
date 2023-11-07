@@ -15,13 +15,13 @@ interface HeaderProps {}
 const Header: FC<HeaderProps> = () => {
   const { language } = useGlobalContext();
 
-  // const { isAudioPlaying } = useChatContext();
+  const { stopPlayingAudio } = useChatContext();
 
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
 
-  const closeFeedbackDialog = () => {
-    setIsFeedbackDialogOpen(false);
-    // handleEndConversation();
+  const openFeedbackDialog = () => {
+    setIsFeedbackDialogOpen(true);
+    stopPlayingAudio();
   };
 
   const router = useRouter();
@@ -35,7 +35,7 @@ const Header: FC<HeaderProps> = () => {
 
     const resetMouseActivity = () => {
       clearTimeout(timeout);
-      timeout = setTimeout(setMouseInactive, 5000);
+      timeout = setTimeout(setMouseInactive, 120000);
     };
 
     window.addEventListener("mousemove", resetMouseActivity);
@@ -55,7 +55,7 @@ const Header: FC<HeaderProps> = () => {
 
       <button
         className="ml-auto text-2xl flex items-center"
-        onClick={closeFeedbackDialog}
+        onClick={openFeedbackDialog}
       >
         {language === "hindi" ? "अंत" : "End"}
         <Image
