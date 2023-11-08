@@ -34,10 +34,15 @@ const QuestionBubble: FC = () => {
     }
 
     const interval = setInterval(() => {
-      setCurrentQuestionIndex((prevIndex) =>
-        prevIndex === questions.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 3000);
+      setQuestionOpacity(0); // Fade out
+
+      setTimeout(() => {
+        setCurrentQuestionIndex((prevIndex) =>
+          prevIndex === questions.length - 1 ? 0 : prevIndex + 1
+        );
+        setQuestionOpacity(1); // Fade in
+      }, 500); //
+    }, 5000);
 
     return () => {
       clearInterval(interval); // Clear the interval when component unmounts
@@ -66,9 +71,14 @@ const QuestionBubble: FC = () => {
     };
   }, []);
 
+  const [questionOpacity, setQuestionOpacity] = useState(1);
+
   return (
     <div className={styles.fullscreenText}>
-      <div className={styles.question}>
+      <div
+        className={`${styles.question}`}
+        style={{ opacity: questionOpacity }}
+      >
         {loading ? (
           <Lottie options={defaultOptionsForLoading} height={200} width={200} />
         ) : (
