@@ -15,11 +15,14 @@ export const uint8ArrayToBase64 = (bytes: Uint8Array) => {
   return window.btoa(binary);
 };
 
+let timeoutId: NodeJS.Timeout;
+
 export const textToSpeech = (
   text: string,
   language: string,
   voice: string,
-  onStart: any
+  onStart: any,
+  onEnd: any
 ) => {
   const speechKey = process.env.NEXT_PUBLIC_SPEECH_KEY;
   const serviceRegion = process.env.NEXT_PUBLIC_SPEECH_REGION;
@@ -45,11 +48,25 @@ export const textToSpeech = (
   speechConfig.speechSynthesisVoiceName = voiceMap[language]?.[voice];
 
   const player = new sdk.SpeakerAudioDestination();
+  // player.onAudioStart = () => {
+  //   console.log("audio started playing");
+  //   onStart();
+  // };
+  // player.onAudioEnd = () => {
+  //   console.log("audio finished playing");
+  //   onEnd();
+  // };
+
   const audioConfig = sdk.AudioConfig.fromSpeakerOutput(player);
   const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
 
+  let estimatedDuration = text.length * 90;
+
   synthesizer.synthesisStarted = (_s, _e) => {
     onStart();
+    timeoutId = setTimeout(() => {
+      onEnd();
+    }, estimatedDuration);
   };
 
   synthesizer.speakTextAsync(text);
@@ -167,9 +184,18 @@ export const translationOnceFromMic = async (
             ? message.answer.hindiText
             : message.answer.englishText;
 
-        const controller = textToSpeech(textToSpeak, language, voice, () => {
-          setIsAudioPlaying(true);
-        });
+        const controller = textToSpeech(
+          textToSpeak,
+          language,
+          voice,
+          () => {
+            setIsAudioPlaying(true);
+          },
+          () => {
+            setIsAudioPlaying(false);
+            setCurrentPlayingIndex(undefined);
+          }
+        );
 
         setCurrentPlayingIndex(messages.length);
         setTtsController(controller.player);

@@ -62,9 +62,17 @@ export const ChatProvider: FC<Props> = ({ children }) => {
           ? currentMessage.answer.hindiText
           : currentMessage.answer.englishText;
 
-      const controller = textToSpeech(textToSpeak, language, voice, () => {
-        setIsAudioPlaying(true);
-      });
+      const controller = textToSpeech(
+        textToSpeak,
+        language,
+        voice,
+        () => {
+          setIsAudioPlaying(true);
+        },
+        () => {
+          setIsAudioPlaying(false);
+        }
+      );
 
       setCurrentPlayingIndex(index);
       setTtsController(controller.player);
