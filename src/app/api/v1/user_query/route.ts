@@ -4,13 +4,14 @@ export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
     console.log("🚀 ~ file: route.ts:6 ~ POST ~ body:", body);
-    const { hindiQuery, englishQuery, sessionId, audio } = body;
+    const { hindiQuery, englishQuery, sessionId, audio, queryId } = body;
 
     const reqBody = {
       hindi_query: hindiQuery,
       english_query: englishQuery,
       session_id: sessionId,
       user_audio: audio,
+      query_id: queryId,
     };
 
     const response = await fetch(

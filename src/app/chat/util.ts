@@ -160,6 +160,7 @@ export const translationOnceFromMic = async (
         setIsRecording(false);
 
         const data = await queryApi({
+          queryId: message.id,
           sessionId,
           hindiQuery: message.question.hindiText,
           englishQuery: message.question.englishText,

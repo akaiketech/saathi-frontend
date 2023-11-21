@@ -10,7 +10,7 @@ export const POST = async (req: NextRequest) => {
       `${process.env.BACKEND_BASE_URL}/api/v1/start_session/`,
       {
         body: JSON.stringify({
-          conversation_id: conversationId,
+          query_id: conversationId,
           session_id: sessionId,
           vote: vote,
         }),

@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { uint8ArrayToBase64 } from "@/app/chat/util";
 
 interface QueryApiArgs {
+  queryId: string;
   hindiQuery: string;
   englishQuery: string;
   sessionId: string;
@@ -12,6 +13,7 @@ interface QueryApiArgs {
 }
 
 export const queryApi = async ({
+  queryId,
   hindiQuery,
   englishQuery,
   sessionId,
@@ -23,6 +25,7 @@ export const queryApi = async ({
     const res = await fetch("/api/v1/user_query", {
       method: "POST",
       body: JSON.stringify({
+        queryId,
         hindiQuery,
         englishQuery,
         sessionId,
@@ -86,7 +89,7 @@ export const feedBackApi = async (sessionId: string, rating: number) => {
 export const votingApi = async (
   sessionId: string,
   conversationId: string,
-  vote: 0 | 1
+  vote: 1 | -1
 ) => {
   const res = await fetch("/api/v1/report", {
     method: "POST",
