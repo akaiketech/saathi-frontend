@@ -12,3 +12,60 @@
 
 body {
 }
+
+.react-markdown ol {
+  margin-block: 30px;
+  list-style-type: decimal;
+}
+
+.react-markdown ul {
+  margin-block: 30px;
+  list-style-type: disc;
+}
+
+.react-markdown ul {
+  margin-block: 30px;
+  list-style-type: disc;
+}
+
+.react-markdown li {
+  margin-left: 30px;
+  margin-block: 20px;
+  margin-left: 30px;
+}
+
+.react-markdown table {
+  border-collapse: collapse;
+  margin-block: 20px;
+}
+
+.react-markdown th,
+td {
+  border: 1.25px solid #e5e7eb;
+  padding: 5px;
+  padding-inline: 20px;
+  background-color: white;
+}
+
+.react-markdown table {
+  border-collapse: collapse;
+  margin-block: 20px;
+}
+
+.react-markdown th,
+td {
+  border: 1.25px solid #e5e7eb;
+  padding: 5px;
+  padding-inline: 20px;
+  background-color: white;
+}
+
+.react-markdown code {
+  font-family: "Monaco", monospace;
+  font-size: 14px;
+  background-color: #f0f0f0;
+  color: #cc743d;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}

@@ -2,6 +2,8 @@
 
 import { FC, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import { useGlobalContext } from "@/app/context";
 import { useChatContext } from "@/app/chat/contexts/ChatContext";
@@ -111,9 +113,16 @@ const MessagesList: FC<MessagesListProps> = ({}) => {
                     </div>
                     <div className="w-1/2 p-3 rounded-[30px_30px_30px_0px] bg-[#FFCBC366] text-gray-700">
                       <div className="text-[18px] not-italic font-semibold leading-[normal]">
-                        {language === "hindi"
-                          ? messageObj.answer.hindiText
-                          : messageObj.answer.englishText}
+                        <ReactMarkdown
+                          children={
+                            language === "hindi"
+                              ? messageObj.answer.hindiText
+                              : messageObj.answer.englishText
+                          }
+                          remarkPlugins={[remarkGfm]}
+                          className="whitespace-normal react-markdown"
+                          linkTarget="_blank"
+                        />
                       </div>
                       <div className="mt-1 w-full flex justify-end ">
                         {!messageObj.answer.vote ? (

@@ -43,6 +43,7 @@ export const queryApi = async ({
     }
 
     const data = await res.json();
+    console.log("🚀 ~ file: index.tsx:46 ~ data:", data);
 
     if (data.error) {
       toast.error(data.error, {

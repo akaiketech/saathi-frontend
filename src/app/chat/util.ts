@@ -61,6 +61,7 @@ export const textToSpeech = (
   const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
 
   let estimatedDuration = text.length * 90;
+  
 
   synthesizer.synthesisStarted = (_s, _e) => {
     onStart();
