@@ -7,7 +7,7 @@ export const POST = async (req: NextRequest) => {
     const { conversationId, sessionId, vote } = body;
 
     const response = await fetch(
-      `${process.env.BACKEND_BASE_URL}/api/v1/start_session/`,
+      `${process.env.BACKEND_BASE_URL}/api/v1/response_feedback/`,
       {
         body: JSON.stringify({
           query_id: conversationId,
