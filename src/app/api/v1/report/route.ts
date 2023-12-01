@@ -12,7 +12,7 @@ export const POST = async (req: NextRequest) => {
         body: JSON.stringify({
           query_id: conversationId,
           session_id: sessionId,
-          vote: vote,
+          feedback: vote,
         }),
         headers: {
           Accept: "application/json",
