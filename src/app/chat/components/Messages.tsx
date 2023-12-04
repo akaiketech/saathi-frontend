@@ -1,9 +1,10 @@
 "use client";
 
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { SpeakerAudioDestination } from "microsoft-cognitiveservices-speech-sdk";
 
 import { useGlobalContext } from "@/app/context";
 import { useChatContext } from "@/app/chat/contexts/ChatContext";
@@ -13,6 +14,7 @@ import { votingApi } from "@/app/chat/api";
 import { ReactLottie } from "@/app/chat/components/ReactLottie";
 
 import loadingData from "../../../../public/loading.json";
+import { textToSpeech } from "../util";
 
 interface MessagesListProps {}
 
@@ -199,21 +201,84 @@ const MessagesList: FC<MessagesListProps> = ({}) => {
           </div>
         ))
       ) : (
-        <div className="mt-2 ml-2">
-          <div className="flex items-end">
-            <div className="mr-1">
-              <Image src="/chatBot.png" alt="chatBot" height={36} width={36} />
-            </div>
-            <div className="w-1/2 p-3 rounded-[30px_30px_30px_0px] bg-[#FFCBC366] text-gray-700">
-              <div className="text-[18px] not-italic font-semibold leading-[normal]">
-                {language === "hindi"
-                  ? "साथी में आपका स्वागत है, मैं एक ध्वनि आधारित वित्तीय योजना सलाहकार हूं। कृपया कोई भी सवाल पूछें, और मैं आपको स्पष्ट उत्तर दूंगा! "
-                  : "Welcome to Saathi, your friendly financial scheme advisor through voice. Feel free to ask any questions, and I'll provide you with clear answers!"}
-              </div>
-            </div>
+        <DefaultMessage />
+      )}
+    </div>
+  );
+};
+
+const DefaultMessage = () => {
+  const { language, voice } = useGlobalContext();
+  const {
+    defaultMsgIsPlaying,
+    setDefaultMsgIsPlaying,
+    defaultMsgPlayer,
+    setDefaultMsgPlayer,
+  } = useChatContext();
+
+  const playAudio = () => {
+    const { player } = textToSpeech(
+      language === "hindi"
+        ? "साथी में आपका स्वागत है, मैं एक ध्वनि आधारित वित्तीय योजना सलाहकार हूं। कृपया कोई भी सवाल पूछें, और मैं आपको स्पष्ट उत्तर दूंगा! "
+        : "Welcome to Saathi, your friendly financial scheme advisor through voice. Feel free to ask any questions, and I'll provide you with clear answers!",
+      language,
+      voice,
+      () => {},
+      () => {
+        setDefaultMsgIsPlaying(false);
+      }
+    );
+    setDefaultMsgPlayer(player);
+  };
+  const stopPlayingAudio = () => {
+    defaultMsgPlayer?.pause();
+    setDefaultMsgPlayer(null);
+  };
+
+  const handleClick = () => {
+    setDefaultMsgIsPlaying((prev) => !prev);
+    defaultMsgIsPlaying ? stopPlayingAudio() : playAudio();
+  };
+
+  return (
+    <div className="mt-2 ml-2">
+      <div className="flex items-end">
+        <div className="mr-1">
+          <Image src="/chatBot.png" alt="chatBot" height={36} width={36} />
+        </div>
+        <div className="w-1/2 p-3 rounded-[30px_30px_30px_0px] bg-[#FFCBC366] text-gray-700">
+          <div className="text-[18px] not-italic font-semibold leading-[normal]">
+            {language === "hindi"
+              ? "साथी में आपका स्वागत है, मैं एक ध्वनि आधारित वित्तीय योजना सलाहकार हूं। कृपया कोई भी सवाल पूछें, और मैं आपको स्पष्ट उत्तर दूंगा! "
+              : "Welcome to Saathi, your friendly financial scheme advisor through voice. Feel free to ask any questions, and I'll provide you with clear answers!"}
+          </div>
+          <div className="flex justify-end">
+            {defaultMsgIsPlaying ? (
+              <button className="flex items-center" onClick={handleClick}>
+                <Image
+                  src="../replay.svg"
+                  alt="Stop"
+                  height={16}
+                  width={16}
+                  className="mr-2"
+                />
+                Stop
+              </button>
+            ) : (
+              <button className="flex items-center" onClick={handleClick}>
+                <Image
+                  src="../replay.svg"
+                  alt="avatar"
+                  height={16}
+                  width={16}
+                  className="mr-2"
+                />
+                Replay
+              </button>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

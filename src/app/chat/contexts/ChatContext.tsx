@@ -22,6 +22,8 @@ interface ChatContextType {
   messages: Message[];
   currentPlayingIndex: number | undefined;
   ttsController: sdk.SpeakerAudioDestination | null;
+  defaultMsgIsPlaying: boolean;
+  defaultMsgPlayer: sdk.SpeakerAudioDestination | null;
   replayAudio: (index: number, language: string, voice: string) => void;
   stopPlayingAudio: () => void;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
@@ -30,6 +32,10 @@ interface ChatContextType {
   setMessages: Dispatch<SetStateAction<Message[]>>;
   setCurrentPlayingIndex: Dispatch<SetStateAction<number | undefined>>;
   setTtsController: Dispatch<
+    SetStateAction<sdk.SpeakerAudioDestination | null>
+  >;
+  setDefaultMsgIsPlaying: Dispatch<SetStateAction<boolean>>;
+  setDefaultMsgPlayer: Dispatch<
     SetStateAction<sdk.SpeakerAudioDestination | null>
   >;
 }
@@ -47,6 +53,9 @@ export const ChatProvider: FC<Props> = ({ children }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number>();
   const [ttsController, setTtsController] =
+    useState<sdk.SpeakerAudioDestination | null>(null);
+  const [defaultMsgIsPlaying, setDefaultMsgIsPlaying] = useState(false);
+  const [defaultMsgPlayer, setDefaultMsgPlayer] =
     useState<sdk.SpeakerAudioDestination | null>(null);
 
   const replayAudio = (index: number, language: string, voice: string) => {
@@ -98,6 +107,8 @@ export const ChatProvider: FC<Props> = ({ children }) => {
         messages,
         currentPlayingIndex,
         ttsController,
+        defaultMsgIsPlaying,
+        defaultMsgPlayer,
         replayAudio,
         stopPlayingAudio,
         setIsLoading,
@@ -106,6 +117,8 @@ export const ChatProvider: FC<Props> = ({ children }) => {
         setMessages,
         setCurrentPlayingIndex,
         setTtsController,
+        setDefaultMsgIsPlaying,
+        setDefaultMsgPlayer,
       }}
     >
       {children}

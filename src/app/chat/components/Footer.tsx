@@ -37,7 +37,14 @@ const Footer: FC<FooterProps> = () => {
     setCurrentPlayingIndex,
     setIsLoading,
     setTtsController,
+    defaultMsgPlayer,
+    setDefaultMsgIsPlaying,
   } = useChatContext();
+
+  if (isRecording) {
+    defaultMsgPlayer?.pause();
+    setDefaultMsgIsPlaying(false);
+  }
 
   return (
     <footer>
