@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -86,8 +86,8 @@ const MessagesList: FC<MessagesListProps> = ({}) => {
                     : messageObj.question.englishText}
                 </div>
               </div>
-              <div className="ml-1">
-                <Image src="/avatar.svg" alt="avatar" height={36} width={36} />
+              <div className="ml-1 flex items-center w-8 h-8 bg-[#DCD6F1] rounded-full p-1">
+                <Image src="/profile.svg" alt="avatar" height={24} width={24} />
               </div>
             </div>
             {messageObj.isLoading ? (
