@@ -68,7 +68,7 @@ const Home = () => {
             </div>
           </section>
         </section>
-        <section className="mt-4">
+        {/* <section className="mt-4">
           <h3 className="text-black text-4xl not-italic font-normal leading-[normal]">
             {language === "hindi" ? "आवाज चुनें" : "Select Voice"}
           </h3>
@@ -100,7 +100,7 @@ const Home = () => {
               </label>
             </div>
           </form>
-        </section>
+        </section> */}
         <section className="mt-8 ">
           <Link
             href="/terms"
