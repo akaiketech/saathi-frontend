@@ -1,8 +1,9 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useState } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
+import { TranslationRecognizer } from "microsoft-cognitiveservices-speech-sdk";
 
 import { useGlobalContext } from "@/app/context";
 import { useChatContext } from "@/app/chat/contexts/ChatContext";
@@ -41,6 +42,13 @@ const Footer: FC<FooterProps> = () => {
     setDefaultMsgIsPlaying,
   } = useChatContext();
 
+  const [recognizer, setRecognizer] = useState<TranslationRecognizer>();
+
+  const stopRecognition = () => {
+    recognizer?.stopContinuousRecognitionAsync();
+    setIsRecording(false);
+  };
+
   if (isRecording) {
     defaultMsgPlayer?.pause();
     setDefaultMsgIsPlaying(false);
@@ -50,7 +58,7 @@ const Footer: FC<FooterProps> = () => {
     <footer>
       <div className="flex justify-center items-center mt-8">
         {isRecording ? (
-          <div>
+          <div onClick={stopRecognition}>
             <ReactLottie options={defaultOptions} height={150} width={150} />
           </div>
         ) : (
@@ -59,7 +67,7 @@ const Footer: FC<FooterProps> = () => {
             onClick={() => {
               if (isAudioPlaying || isLoading) return;
               setIsRecording(true);
-              translationOnceFromMic(
+              const rec = translationOnceFromMic({
                 language,
                 sessionId,
                 voice,
@@ -70,14 +78,9 @@ const Footer: FC<FooterProps> = () => {
                 setMessages,
                 setCurrentPlayingIndex,
                 setIsLoading,
-                setTtsController
-              ).catch((err) => {
-                console.error(err);
-                toast.error(err.message, {
-                  autoClose: 5000,
-                  position: "top-right",
-                });
+                setTtsController,
               });
+              setRecognizer(rec);
             }}
           >
             <Image

@@ -6,6 +6,22 @@ import { Message } from "@/app/types";
 
 import { queryApi } from "@/app/chat/api";
 
+interface TranslationOnceFromMicProps {
+  language: string;
+  sessionId: string;
+  voice: string;
+  isAudioPlaying: boolean;
+  messages: Message[];
+  setIsAudioPlaying: Dispatch<SetStateAction<boolean>>;
+  setIsRecording: Dispatch<SetStateAction<boolean>>;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
+  setCurrentPlayingIndex: Dispatch<SetStateAction<number | undefined>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
+  setTtsController: Dispatch<
+    SetStateAction<sdk.SpeakerAudioDestination | null>
+  >;
+}
+
 export const uint8ArrayToBase64 = (bytes: Uint8Array) => {
   let binary = "";
   const len = bytes.byteLength;
@@ -61,7 +77,6 @@ export const textToSpeech = (
   const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
 
   let estimatedDuration = text.length * 90;
-  
 
   synthesizer.synthesisStarted = (_s, _e) => {
     onStart();
@@ -75,19 +90,19 @@ export const textToSpeech = (
   return { player };
 };
 
-export const translationOnceFromMic = async (
-  language: string,
-  sessionId: string,
-  voice: string,
-  isAudioPlaying: boolean,
-  messages: Message[],
-  setIsAudioPlaying: Dispatch<SetStateAction<boolean>>,
-  setIsRecording: Dispatch<SetStateAction<boolean>>,
-  setMessages: Dispatch<SetStateAction<Message[]>>,
-  setCurrentPlayingIndex: Dispatch<SetStateAction<number | undefined>>,
-  setIsLoading: Dispatch<SetStateAction<boolean>>,
-  setTtsController: Dispatch<SetStateAction<sdk.SpeakerAudioDestination | null>>
-) => {
+export const translationOnceFromMic = ({
+  language,
+  sessionId,
+  voice,
+  isAudioPlaying,
+  messages,
+  setIsAudioPlaying,
+  setIsRecording,
+  setMessages,
+  setCurrentPlayingIndex,
+  setIsLoading,
+  setTtsController,
+}: TranslationOnceFromMicProps) => {
   const speechKey = process.env.NEXT_PUBLIC_SPEECH_KEY;
   const serviceRegion = process.env.NEXT_PUBLIC_SPEECH_REGION;
 
@@ -135,6 +150,7 @@ export const translationOnceFromMic = async (
     new Promise((resolve, reject) => {
       recognizer.recognizeOnceAsync(async (result) => {
         resolve(result as sdk.TranslationRecognitionResult);
+
         let byteCount: number = 0;
         for (let i: number = 0; i < wavFragmentCount; i++) {
           byteCount += wavFragments[i].byteLength;
@@ -205,4 +221,6 @@ export const translationOnceFromMic = async (
     });
 
   recognizeOnceAsync();
+
+  return recognizer;
 };
