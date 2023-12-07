@@ -35,7 +35,7 @@ const Header: FC<HeaderProps> = () => {
 
     const resetMouseActivity = () => {
       clearTimeout(timeout);
-      timeout = setTimeout(setMouseInactive, 120000);
+      timeout = setTimeout(setMouseInactive, 300000);
     };
 
     window.addEventListener("mousemove", resetMouseActivity);
